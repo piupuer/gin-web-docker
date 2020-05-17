@@ -1,0 +1,6 @@
+.idea
+temp/
+logs
+gin-web/
+gin-web-vue/
+data/

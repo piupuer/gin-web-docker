@@ -1,0 +1,91 @@
+version: '3'
+services:
+  # 数据库
+  gin-web-db:
+    # 容器名称
+    container_name: gin-web-mysql
+    # 重启策略: 容器退出时总是重启容器
+    restart: always
+    # 指定镜像, mysql 8.0
+    image: mysql:8.0.19
+    ports:
+      # 避免端口冲突, 宿主机不用3306
+      - 23306:3306
+    # 设置环境变量
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gin_web
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    # 自定义命令
+    command:
+      # utf8
+      # 不区分大小写
+      # mysql8.0需要设置原生密码, 否则可能无法登录
+      # 增大数据包, 默认值1M
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --lower_case_table_names=1
+      --default-authentication-plugin=mysql_native_password
+      --max_allowed_packet=128M
+    # 挂载文件
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    # 设置网络
+    networks:
+      - gin-web-net
+
+  # 后端容器
+  gin-web:
+    container_name: gin-web
+    restart: always
+    build:
+      # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
+      context: .
+      dockerfile: ./gin-web/Dockerfile
+    # 设置工作目录为容器内的app文件夹(容器运行时会用到)
+    working_dir: /app/gin-web
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      # 映射容器产生的日志到主机的logs文件夹
+      - ./data/web/logs:/app/gin-web/logs
+    # 映射端口
+    ports:
+      - "10000:10000"
+    depends_on:
+      - gin-web-db
+    links:
+      # 为数据库设置别名, docker网桥名:应用内部访问名
+      - "gin-web-db:docker-db"
+    networks:
+      - gin-web-net
+
+  # 前端容器
+  gin-web-vue:
+    container_name: gin-web-vue
+    restart: always
+    build:
+      context: .
+      dockerfile: ./gin-web-vue/Dockerfile
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "10001:10001"
+    depends_on:
+      - gin-web
+    links:
+      # 为nginx配置后端访问别名, docker网桥名:应用内部访问名
+      - "gin-web:gin-web"
+    # 挂载文件
+    volumes:
+      # 映射容器产生的日志到主机的logs文件夹
+      - ./data/nginx/logs:/var/log/nginx
+    # 设置网络
+    networks:
+      - gin-web-net
+
+networks:
+  # 定义网络gin-web, 供前后端/mysql使用
+  gin-web-net:
