@@ -14,4 +14,7 @@ chmod +x version.sh
 ./version.sh
 
 cd $WORKSPACE
-docker-compose up
+# 先关闭正在运行的项目
+docker-compose down
+# 后台启动项目(未构建时会自动构建)
+docker-compose up -d

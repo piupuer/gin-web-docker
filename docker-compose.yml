@@ -1,7 +1,7 @@
 version: '3'
 services:
   # 数据库
-  gin-web-db:
+  gin-web-mysql:
     # 容器名称
     container_name: gin-web-mysql
     # 重启策略: 容器退出时总是重启容器
@@ -10,7 +10,7 @@ services:
     image: mysql:8.0.19
     ports:
       # 避免端口冲突, 宿主机不用3306
-      - 23306:3306
+      - 5555:3306
     # 设置环境变量
     environment:
       TZ: Asia/Shanghai
@@ -31,10 +31,30 @@ services:
       --max_allowed_packet=128M
     # 挂载文件
     volumes:
-      - ./data/mysql:/var/lib/mysql
+#      - ./docker-data/mysql:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+#      - mysql-dump:/usr/bin/mysqldump
     # 设置网络
     networks:
-      - gin-web-net
+      - net
+
+  # 缓存
+  gin-web-redis:
+    # 容器名称
+    container_name: gin-web-redis
+    # 重启策略: 容器退出时总是重启容器
+    restart: always
+    # 指定镜像
+    image: redis:6.0.3
+    ports:
+      - 5556:6379
+    # 挂载文件
+    volumes:
+#      - ./docker-data/redis:/data
+      - redis-data:/data
+    # 设置网络
+    networks:
+      - net
 
   # 后端容器
   gin-web:
@@ -50,17 +70,21 @@ services:
       TZ: Asia/Shanghai
     volumes:
       # 映射容器产生的日志到主机的logs文件夹
-      - ./data/web/logs:/app/gin-web/logs
+#      - ./docker-data/web/logs:/app/gin-web/logs
+      - app-logs-data:/app/gin-web/logs
+#      - mysql-dump:/usr/bin/mysqldump
     # 映射端口
     ports:
-      - "10000:10000"
+      - 5557:10000
     depends_on:
-      - gin-web-db
+      - gin-web-mysql
+      - gin-web-redis
     links:
       # 为数据库设置别名, docker网桥名:应用内部访问名
-      - "gin-web-db:docker-db"
+      - gin-web-mysql:docker-mysql
+      - gin-web-redis:docker-redis
     networks:
-      - gin-web-net
+      - net
 
   # 前端容器
   gin-web-vue:
@@ -72,20 +96,30 @@ services:
     environment:
       TZ: Asia/Shanghai
     ports:
-      - "10001:10001"
+      - 5558:10001
     depends_on:
       - gin-web
     links:
       # 为nginx配置后端访问别名, docker网桥名:应用内部访问名
-      - "gin-web:gin-web"
+      - gin-web:docker-web
     # 挂载文件
     volumes:
       # 映射容器产生的日志到主机的logs文件夹
-      - ./data/nginx/logs:/var/log/nginx
+#      - ./docker-data/nginx/logs:/var/log/nginx
+      - vue-logs-data:/var/log/nginx
     # 设置网络
     networks:
-      - gin-web-net
+      - net
 
 networks:
   # 定义网络gin-web, 供前后端/mysql使用
-  gin-web-net:
+  net:
+
+
+# 全局数据卷, 可容器间共享
+volumes:
+  mysql-data:
+  mysql-dump:
+  redis-data:
+  app-logs-data:
+  vue-logs-data:

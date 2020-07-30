@@ -3,4 +3,4 @@ temp/
 logs
 gin-web/
 gin-web-vue/
-data/
+docker-data/

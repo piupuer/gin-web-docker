@@ -36,8 +36,8 @@ docker-compose build
 # 无缓存构建
 # docker-compose build --no-cache
 
-# 运行
-docker-compose up
+# 运行(后台启动)
+docker-compose up -d
 ```
 ### shell脚本(支持unix内核系统)
 
@@ -47,6 +47,10 @@ cd gin-web-docker
 chmod +x build.sh
 ./build.sh
 ```
+
+### nginx配置
+
+请将docker-conf/nginx目录下的配置文件拷贝到nginx安装目录(Ubuntu是在/etc/nginx)
 
 ### 域名映射
 
