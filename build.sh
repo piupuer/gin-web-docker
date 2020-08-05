@@ -16,5 +16,7 @@ chmod +x version.sh
 cd $WORKSPACE
 # 先关闭正在运行的项目
 docker-compose down
-# 后台启动项目(未构建时会自动构建)
+# 无缓存重新构建镜像
+docker-compose build --no-cache
+# 后台启动项目
 docker-compose up -d
