@@ -2,8 +2,27 @@
 
 WORKSPACE=$(cd $(dirname $0)/; pwd)
 
-git clone git@github.com:piupuer/gin-web
-git clone git@github.com:piupuer/gin-web-vue
+REPO=git@github.com:piupuer
+
+if [ ! -d "$WORKSPACE/gin-web" ]; then
+  echo 'start clone gin-web...'
+  git clone $REPO/gin-web
+else
+  echo 'start update gin-web...'
+  cd $WORKSPACE/gin-web
+  git pull
+fi
+
+cd $WORKSPACE
+
+if [ ! -d "$WORKSPACE/gin-web-vue" ]; then
+  echo 'start clone gin-web-vue...'
+  git clone $REPO/gin-web-vue
+else
+  echo 'start update gin-web-vue...'
+  cd $WORKSPACE/gin-web-vue
+  git pull
+fi
 
 cd $WORKSPACE/gin-web
 chmod +x version.sh
