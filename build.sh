@@ -1,8 +1,10 @@
 #!/bin/bash
 
-WORKSPACE=$(cd $(dirname $0)/; pwd)
+WORKSPACE=$(dirname $0)
 
 REPO=git@github.com:piupuer
+
+cd $WORKSPACE
 
 if [ ! -d "$WORKSPACE/gin-web" ]; then
   echo 'start clone gin-web...'
