@@ -4,3 +4,4 @@ gin-web-vue/.git
 
 # 忽略前端node_modules
 gin-web-vue/node_modules
+gin-web-vue/package-lock.json
