@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WORKSPACE=$(dirname $0)
+WORKSPACE=$(cd "$(dirname "$0")";pwd)
 
 REPO=git@github.com:piupuer
 
