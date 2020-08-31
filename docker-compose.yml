@@ -48,6 +48,8 @@ services:
     image: redis:6.0.3
     ports:
       - 5556:6379
+    environment:
+      TZ: Asia/Shanghai
     # 挂载文件
     volumes:
 #      - ./docker-data/redis:/data
