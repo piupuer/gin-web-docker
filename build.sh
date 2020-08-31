@@ -5,6 +5,7 @@ WORKSPACE=$(cd "$(dirname "$0")";pwd)
 REPO=git@github.com:piupuer
 
 cd $WORKSPACE
+git pull
 
 if [ ! -d "$WORKSPACE/gin-web" ]; then
   echo 'start clone gin-web...'
