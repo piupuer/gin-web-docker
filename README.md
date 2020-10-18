@@ -44,8 +44,8 @@ docker-compose up -d
 ```
 git clone git@github.com:piupuer/gin-web-docker.git
 cd gin-web-docker
-chmod +x build.sh
-./build.sh
+chmod +x control.sh
+./control build
 ```
 
 ### nginx配置

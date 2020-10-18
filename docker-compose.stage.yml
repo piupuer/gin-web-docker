@@ -1,21 +1,21 @@
 version: '3'
 services:
   # 数据库
-  gin-web-mysql-prod:
+  gin-web-mysql-stage:
     # 容器名称
-    container_name: gin-web-mysql-prod
+    container_name: gin-web-mysql-stage
     # 重启策略: 容器退出时总是重启容器
     restart: always
     # 指定镜像, mysql 8.0
     image: mysql:8.0.19
     ports:
       # 避免端口冲突, 宿主机不用3306
-      - 3306:3306
+      - 4306:3306
     # 设置环境变量
     environment:
       TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: gin_web_prod
+      MYSQL_DATABASE: gin_web_stage
       MYSQL_USER: root
       MYSQL_PASSWORD: root
     # 自定义命令
@@ -31,94 +31,94 @@ services:
       --max_allowed_packet=128M
     # 挂载文件
     volumes:
-      # - ./docker-prod-data/mysql:/var/lib/mysql
-      - mysql-prod-data:/var/lib/mysql
+      # - ./docker-stage-data/mysql:/var/lib/mysql
+      - mysql-stage-data:/var/lib/mysql
     # 设置网络
     networks:
-      - prod-net
+      - stage-net
 
   # 缓存
-  gin-web-redis-prod:
+  gin-web-redis-stage:
     # 容器名称
-    container_name: gin-web-redis-prod
+    container_name: gin-web-redis-stage
     # 重启策略: 容器退出时总是重启容器
     restart: always
     # 指定镜像
     image: redis:6.0.3
     ports:
-      - 6379:6379
+      - 7379:6379
     environment:
       TZ: Asia/Shanghai
     # 挂载文件
     volumes:
-      # - ./docker-prod-data/redis:/data
-      - redis-prod-data:/data
+      # - ./docker-stage-data/redis:/data
+      - redis-stage-data:/data
     # 设置网络
     networks:
-      - prod-net
+      - stage-net
 
   # 后端容器
-  gin-web-prod:
-    container_name: gin-web-prod
+  gin-web-stage:
+    container_name: gin-web-stage
     restart: always
     build:
       # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
       context: .
-      dockerfile: ./gin-web/Dockerfile
+      dockerfile: ./gin-web/Dockerfile.stage
     # 设置工作目录为容器内的app文件夹(容器运行时会用到)
-    working_dir: /app/gin-web-prod
+    working_dir: /app/gin-web-stage
     environment:
       TZ: Asia/Shanghai
     volumes:
       # 映射容器产生的日志到主机的logs文件夹
-      # - ./docker-prod-data/web/logs:/app/gin-web-prod/logs
-      - app-logs-prod-data:/app/gin-web-prod/logs
+      # - ./docker-stage-data/web/logs:/app/gin-web-stage/logs
+      - app-logs-stage-data:/app/gin-web-stage/logs
     # 映射端口
     ports:
-      - 8080:8080
+      - 9090:9090
     depends_on:
-      - gin-web-mysql-prod
-      - gin-web-redis-prod
+      - gin-web-mysql-stage
+      - gin-web-redis-stage
     links:
       # 为数据库设置别名, docker网桥名:应用内部访问名
-      - gin-web-mysql-prod:docker-mysql
-      - gin-web-redis-prod:docker-redis
+      - gin-web-mysql-stage:docker-mysql
+      - gin-web-redis-stage:docker-redis
     networks:
-      - prod-net
+      - stage-net
 
   # 前端容器
-  gin-web-vue-prod:
-    container_name: gin-web-vue-prod
+  gin-web-vue-stage:
+    container_name: gin-web-vue-stage
     restart: always
     build:
       context: .
-      dockerfile: ./gin-web-vue/Dockerfile
+      dockerfile: ./gin-web-vue/Dockerfile.stage
     environment:
       TZ: Asia/Shanghai
     ports:
-      - 8081:8081
+      - 9091:9091
     depends_on:
-      - gin-web-prod
+      - gin-web-stage
     links:
       # 为nginx配置后端访问别名, docker网桥名:应用内部访问名
-      - gin-web-prod:docker-web
+      - gin-web-stage:docker-web
     # 挂载文件
     volumes:
       # 映射容器产生的日志到主机的logs文件夹
-      # - ./docker-prod-data/nginx/logs:/var/log/nginx
-      - vue-logs-prod-data:/var/log/nginx
+      # - ./docker-stage-data/nginx/logs:/var/log/nginx
+      - vue-logs-stage-data:/var/log/nginx
     # 设置网络
     networks:
-      - prod-net
+      - stage-net
 
 networks:
   # 定义网络gin-web, 供前后端/mysql使用
-  prod-net:
+  stage-net:
 
 
 # 全局数据卷, 可容器间共享
 volumes:
-  mysql-prod-data:
-  redis-prod-data:
-  app-logs-prod-data:
-  vue-logs-prod-data:
+  mysql-stage-data:
+  redis-stage-data:
+  app-logs-stage-data:
+  vue-logs-stage-data:
