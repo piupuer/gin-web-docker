@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FILE="docker-compose.yml"
-if [ $GIN_WEB_MODE == "staging" ]; then
+if [ "$GIN_WEB_MODE" == "staging" ]; then
   FILE=docker-compose.stage.yml
 fi
 
@@ -12,8 +12,11 @@ WORKSPACE=$(
 REPO=git@github.com:piupuer
 
 function build() {
-  cd $WORKSPACE
-  git pull
+  branchName='master'
+  if [ "$1" ]; then
+    branchName=$1
+  fi
+  echo $branchName
 
   if [ ! -d "$WORKSPACE/gin-web" ]; then
     echo 'start clone gin-web...'
@@ -23,6 +26,7 @@ function build() {
     cd $WORKSPACE/gin-web
     git pull
   fi
+  git checkout $branchName
 
   cd $WORKSPACE
 
@@ -34,6 +38,7 @@ function build() {
     cd $WORKSPACE/gin-web-vue
     git pull
   fi
+  git checkout $branchName
 
   cd $WORKSPACE/gin-web
   chmod +x version.sh
@@ -93,7 +98,7 @@ elif [ "$1" == "stop" ]; then
 elif [ "$1" == "restart" ]; then
   restart
 elif [ "$1" == "build" ]; then
-  build
+  build $2
 else
   help
 fi
