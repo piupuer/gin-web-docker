@@ -26,6 +26,7 @@ function build() {
     cd $WORKSPACE/gin-web
     git pull
   fi
+  cd $WORKSPACE/gin-web
   git checkout $branchName
 
   cd $WORKSPACE
@@ -38,6 +39,7 @@ function build() {
     cd $WORKSPACE/gin-web-vue
     git pull
   fi
+  cd $WORKSPACE/gin-web-vue
   git checkout $branchName
 
   cd $WORKSPACE/gin-web
@@ -50,10 +52,15 @@ function build() {
 
   cd $WORKSPACE
 
+  nocache
+}
+
+function nocache() {
   stop
-  # 无缓存重新构建镜像
+  # 重新拉取镜像
+  docker-compose -f $FILE pull
   docker-compose -f $FILE build --no-cache
-#  docker-compose -f $FILE build
+  # docker-compose -f $FILE build
   start
 }
 
@@ -84,7 +91,7 @@ function tail() {
 }
 
 function help() {
-  echo "$0 build|start|stop|restart|status|tail"
+  echo "$0 build|remote|start|stop|restart|status|tail"
 }
 
 if [ "$1" == "tail" ]; then
@@ -99,6 +106,8 @@ elif [ "$1" == "restart" ]; then
   restart
 elif [ "$1" == "build" ]; then
   build $2
+elif [ "$1" == "remote" ]; then
+  nocache
 else
   help
 fi

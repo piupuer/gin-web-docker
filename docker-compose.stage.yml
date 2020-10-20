@@ -61,10 +61,12 @@ services:
   gin-web-stage:
     container_name: gin-web-stage
     restart: always
-    build:
-      # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
-      context: ./gin-web
-      dockerfile: Dockerfile.stage
+    # 本地构建使用build, 这里我在持续构建平台以及传到了阿里云镜像仓库, 因此直接使用镜像地址
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-stage:latest
+    # build:
+    #   # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
+    #   context: ./gin-web
+    #   dockerfile: Dockerfile.stage
     # 设置工作目录为容器内的app文件夹(容器运行时会用到)
     working_dir: /app/gin-web-stage
     environment:
@@ -90,9 +92,10 @@ services:
   gin-web-vue-stage:
     container_name: gin-web-vue-stage
     restart: always
-    build:
-      context: ./gin-web-vue
-      dockerfile: Dockerfile.stage
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-vue-stage:latest
+    # build:
+    #   context: ./gin-web-vue
+    #   dockerfile: Dockerfile.stage
     environment:
       TZ: Asia/Shanghai
     ports:
