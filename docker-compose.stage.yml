@@ -75,6 +75,7 @@ services:
       # 映射容器产生的日志到主机的logs文件夹
       # - ./docker-stage-data/web/logs:/app/gin-web-stage/logs
       - app-logs-stage-data:/app/gin-web-stage/logs
+      - app-conf-stage-data:/app/gin-web-stage/conf
     # 映射端口
     ports:
       - 9090:9090
@@ -124,4 +125,5 @@ volumes:
   mysql-stage-data:
   redis-stage-data:
   app-logs-stage-data:
+  app-conf-stage-data:
   vue-logs-stage-data:

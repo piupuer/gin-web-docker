@@ -75,6 +75,7 @@ services:
       # 映射容器产生的日志到主机的logs文件夹
       # - ./docker-prod-data/web/logs:/app/gin-web-prod/logs
       - app-logs-prod-data:/app/gin-web-prod/logs
+      - app-conf-prod-data:/app/gin-web-prod/conf
     # 映射端口
     ports:
       - 8080:8080
@@ -124,4 +125,5 @@ volumes:
   mysql-prod-data:
   redis-prod-data:
   app-logs-prod-data:
+  app-conf-prod-data:
   vue-logs-prod-data:
