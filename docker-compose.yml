@@ -63,8 +63,8 @@ services:
     restart: always
     build:
       # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
-      context: .
-      dockerfile: ./gin-web/Dockerfile
+      context: ./gin-web
+      dockerfile: Dockerfile
     # 设置工作目录为容器内的app文件夹(容器运行时会用到)
     working_dir: /app/gin-web-prod
     environment:
@@ -91,8 +91,8 @@ services:
     container_name: gin-web-vue-prod
     restart: always
     build:
-      context: .
-      dockerfile: ./gin-web-vue/Dockerfile
+      context: ./gin-web-vue
+      dockerfile: Dockerfile
     environment:
       TZ: Asia/Shanghai
     ports:
