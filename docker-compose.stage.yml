@@ -11,6 +11,12 @@ services:
     ports:
       # 避免端口冲突, 宿主机不用3306
       - 4306:3306
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
     # 设置环境变量
     environment:
       TZ: Asia/Shanghai
@@ -47,6 +53,12 @@ services:
     image: redis:6.0.3
     ports:
       - 7379:6379
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
     environment:
       TZ: Asia/Shanghai
     # 挂载文件
@@ -79,6 +91,12 @@ services:
     # 映射端口
     ports:
       - 9090:9090
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
     depends_on:
       - gin-web-mysql-stage
       - gin-web-redis-stage
@@ -101,6 +119,12 @@ services:
       TZ: Asia/Shanghai
     ports:
       - 9091:9091
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
     depends_on:
       - gin-web-stage
     links:

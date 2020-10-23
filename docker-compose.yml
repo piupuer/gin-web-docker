@@ -16,7 +16,7 @@ services:
       driver: loki
       options:
         # 日志推送地址(可以改为你的域名或者配置到hosts文件中)
-        loki-url: http://loki.piupuer.com:3100/api/prom/push
+        loki-url: http://10.13.2.252:3100/api/prom/push
     # 设置环境变量
     environment:
       TZ: Asia/Shanghai
@@ -58,7 +58,7 @@ services:
       driver: loki
       options:
         # 日志推送地址
-        loki-url: http://loki.piupuer.com:3100/api/prom/push
+        loki-url: http://10.13.2.252:3100/api/prom/push
     environment:
       TZ: Asia/Shanghai
     # 挂载文件
@@ -96,7 +96,7 @@ services:
       driver: loki
       options:
         # 日志推送地址
-        loki-url: http://loki.piupuer.com:3100/api/prom/push
+        loki-url: http://10.13.2.252:3100/api/prom/push
     depends_on:
       - gin-web-mysql-prod
       - gin-web-redis-prod
@@ -124,7 +124,7 @@ services:
       driver: loki
       options:
         # 日志推送地址
-        loki-url: http://loki.piupuer.com:3100/api/prom/push
+        loki-url: http://10.13.2.252:3100/api/prom/push
     depends_on:
       - gin-web-prod
     links:
