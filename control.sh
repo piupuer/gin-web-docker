@@ -69,15 +69,33 @@ function start() {
   docker-compose -f $FILE up -d
 }
 
+function startLoki() {
+  cd $WORKSPACE
+  docker-compose -f docker-compose.loki.yml up -d
+}
+
 function stop() {
   cd $WORKSPACE
   docker-compose -f $FILE down
+}
+
+function stopLoki() {
+  cd $WORKSPACE
+  docker-compose -f docker-compose.loki.yml down
 }
 
 function restart() {
   cd $WORKSPACE
   stop
   start
+}
+
+function restartLoki() {
+  cd $WORKSPACE
+  # 关闭loki日志服务
+  docker-compose -f docker-compose.loki.yml down
+  # 启动loki日志服务
+  docker-compose -f docker-compose.loki.yml up -d
 }
 
 function status() {
@@ -91,7 +109,7 @@ function tail() {
 }
 
 function help() {
-  echo "$0 build|remote|start|stop|restart|status|tail"
+  echo "$0 build|remote|start|stop|restart|restart loki|status|tail"
 }
 
 if [ "$1" == "tail" ]; then
@@ -99,11 +117,23 @@ if [ "$1" == "tail" ]; then
 elif [ "$1" == "status" ]; then
   status
 elif [ "$1" == "start" ]; then
-  start
+  if [ "$2" == "loki" ]; then
+    startLoki
+  else
+    start
+  fi
 elif [ "$1" == "stop" ]; then
-  stop
+  if [ "$2" == "loki" ]; then
+    stopLoki
+  else
+    stop
+  fi
 elif [ "$1" == "restart" ]; then
-  restart
+  if [ "$2" == "loki" ]; then
+    restartLoki
+  else
+    restart
+  fi
 elif [ "$1" == "build" ]; then
   build $2
 elif [ "$1" == "remote" ]; then
