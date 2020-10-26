@@ -74,7 +74,7 @@ services:
     container_name: gin-web-stage
     restart: always
     # 本地构建使用build, 这里我在持续构建平台以及传到了阿里云镜像仓库, 因此直接使用镜像地址
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-stage:latest
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-stage:${GIN_WEB_TAG}
     # build:
     #   # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
     #   context: ./gin-web
@@ -111,7 +111,7 @@ services:
   gin-web-vue-stage:
     container_name: gin-web-vue-stage
     restart: always
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-vue-stage:latest
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-vue-stage:${GIN_WEB_VUE_TAG}
     # build:
     #   context: ./gin-web-vue
     #   dockerfile: Dockerfile.stage
