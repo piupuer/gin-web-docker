@@ -74,6 +74,11 @@ function startLoki() {
   docker-compose -f docker-compose.loki.yml up -d
 }
 
+function startMinio() {
+  cd $WORKSPACE
+  docker-compose -f docker-compose.minio.yml up -d
+}
+
 function stop() {
   cd $WORKSPACE
   docker-compose -f $FILE down
@@ -82,6 +87,11 @@ function stop() {
 function stopLoki() {
   cd $WORKSPACE
   docker-compose -f docker-compose.loki.yml down
+}
+
+function stopMinio() {
+  cd $WORKSPACE
+  docker-compose -f docker-compose.minio.yml down
 }
 
 function restart() {
@@ -96,6 +106,14 @@ function restartLoki() {
   docker-compose -f docker-compose.loki.yml down
   # 启动loki日志服务
   docker-compose -f docker-compose.loki.yml up -d
+}
+
+function restartMinio() {
+  cd $WORKSPACE
+  # 关闭minio对象存储服务
+  docker-compose -f docker-compose.minio.yml down
+  # 启动minio对象存储服务
+  docker-compose -f docker-compose.minio.yml up -d
 }
 
 function status() {
@@ -119,18 +137,24 @@ elif [ "$1" == "status" ]; then
 elif [ "$1" == "start" ]; then
   if [ "$2" == "loki" ]; then
     startLoki
+  elif [ "$2" == "minio" ]; then
+    startMinio
   else
     start
   fi
 elif [ "$1" == "stop" ]; then
   if [ "$2" == "loki" ]; then
     stopLoki
+  elif [ "$2" == "minio" ]; then
+    stopMinio
   else
     stop
   fi
 elif [ "$1" == "restart" ]; then
   if [ "$2" == "loki" ]; then
     restartLoki
+  elif [ "$2" == "minio" ]; then
+    restartMinio
   else
     restart
   fi
