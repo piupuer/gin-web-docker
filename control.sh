@@ -4,7 +4,6 @@ WORKSPACE=$(
   cd "$(dirname "$0")"
   pwd
 )
-REPO=git@github.com:piupuer
 
 function run() {
   # 空字符默认后端和前端
@@ -130,11 +129,9 @@ function start() {
     fi
   else
     if [ "$GIN_WEB_MODE" == "staging" ]; then
-      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml create --no-recreate $1
-      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml start $1
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml up -d $1
     else
-      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml create --no-recreate $1
-      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml start $1
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml up -d $1
     fi
   fi
 }
