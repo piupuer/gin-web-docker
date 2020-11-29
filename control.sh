@@ -1,9 +1,4 @@
-#!/bin/bash
-
-FILE="docker-compose.yml"
-if [ "$GIN_WEB_MODE" == "staging" ]; then
-  FILE=docker-compose.stage.yml
-fi
+#!/bin/bash -x
 
 WORKSPACE=$(
   cd "$(dirname "$0")"
@@ -11,157 +6,298 @@ WORKSPACE=$(
 )
 REPO=git@github.com:piupuer
 
-function build() {
-  branchName='master'
-  if [ "$1" ]; then
-    branchName=$1
+function run() {
+  # 空字符默认后端和前端
+  if [ "$1" == "" ]; then
+    run web && run ui
+    return
   fi
-  echo $branchName
 
-  if [ ! -d "$WORKSPACE/gin-web" ]; then
-    echo 'start clone gin-web...'
-    git clone $REPO/gin-web
-  else
-    echo 'start update gin-web...'
-    cd $WORKSPACE/gin-web
-    git pull
-  fi
-  cd $WORKSPACE/gin-web
-  git checkout $branchName
-
-  cd $WORKSPACE
-
-  if [ ! -d "$WORKSPACE/gin-web-vue" ]; then
-    echo 'start clone gin-web-vue...'
-    git clone $REPO/gin-web-vue
-  else
-    echo 'start update gin-web-vue...'
-    cd $WORKSPACE/gin-web-vue
-    git pull
-  fi
-  cd $WORKSPACE/gin-web-vue
-  git checkout $branchName
-
-  cd $WORKSPACE/gin-web
-  chmod +x version.sh
-  ./version.sh
-
-  cd $WORKSPACE/gin-web-vue
-  chmod +x version.sh
-  ./version.sh
-
-  cd $WORKSPACE
-
-  nocache
+  # 停止
+  stop $1
+  # 拉取
+  pull $1
+  # 构建
+  build $1
+  # 启动
+  start $1
 }
 
-function nocache() {
-  stop
-  # 重新拉取镜像
-  docker-compose -f $FILE pull
-  docker-compose -f $FILE build --no-cache
-  # docker-compose -f $FILE build
-  start
+function pull() {
+  # 空字符默认后端和前端
+  if [ "$1" == "" ]; then
+    pull web && pull ui
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml pull
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml pull
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml pull
+    else
+      docker-compose -f docker-compose.db.yml logs pull
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml pull
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml pull
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml pull
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml pull
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml pull $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml pull $1
+    fi
+  fi
+}
+
+function build() {
+  # 空字符默认后端和前端
+  if [ "$1" == "" ]; then
+    build web && build ui
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml build
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml build
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml build
+    else
+      docker-compose -f docker-compose.db.yml build
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml build
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml build
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml build
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml build
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml build $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml build $1
+    fi
+  fi
 }
 
 function start() {
-  cd $WORKSPACE
-  docker-compose -f $FILE up -d
-}
-
-function startLoki() {
-  cd $WORKSPACE
-  docker-compose -f docker-compose.loki.yml up -d
-}
-
-function startMinio() {
-  cd $WORKSPACE
-  docker-compose -f docker-compose.minio.yml up -d
+  # 空字符默认后端和前端
+  if [ "$1" == "" ]; then
+    start web && start ui
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml up -d
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml up -d
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml up -d
+    else
+      docker-compose -f docker-compose.db.yml up -d
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml up -d
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml up -d
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml up -d
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml up -d
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml create --no-recreate $1
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml start $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml create --no-recreate $1
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml start $1
+    fi
+  fi
 }
 
 function stop() {
-  cd $WORKSPACE
-  docker-compose -f $FILE down
+  # 空字符默认后端和前端
+  if [ "$1" == "" ]; then
+    stop web && stop ui
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml down
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml down
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml down
+    else
+      docker-compose -f docker-compose.db.yml down
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml down
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml down
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml down
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml down
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml stop $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml stop $1
+    fi
+  fi
 }
 
-function stopLoki() {
-  cd $WORKSPACE
-  docker-compose -f docker-compose.loki.yml down
-}
-
-function stopMinio() {
-  cd $WORKSPACE
-  docker-compose -f docker-compose.minio.yml down
-}
-
-function restart() {
-  cd $WORKSPACE
-  stop
-  start
-}
-
-function restartLoki() {
-  cd $WORKSPACE
-  # 关闭loki日志服务
-  docker-compose -f docker-compose.loki.yml down
-  # 启动loki日志服务
-  docker-compose -f docker-compose.loki.yml up -d
-}
-
-function restartMinio() {
-  cd $WORKSPACE
-  # 关闭minio对象存储服务
-  docker-compose -f docker-compose.minio.yml down
-  # 启动minio对象存储服务
-  docker-compose -f docker-compose.minio.yml up -d
-}
-
-function status() {
-  cd $WORKSPACE
-  docker-compose -f $FILE top
+function top() {
+  if [ "$1" == "" ]; then
+    echo "请指定容器名" && exit 1
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml top
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml top
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml top
+    else
+      docker-compose -f docker-compose.db.yml logs top
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml top
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml top
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml top
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml top
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml top $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml top $1
+    fi
+  fi
 }
 
 function tail() {
-  cd $WORKSPACE
-  docker-compose -f $FILE logs -f --tail=50
+  if [ "$1" == "" ]; then
+    echo "请指定容器名" && exit 1
+    return
+  fi
+  
+  if [ "$1" == "loki" ]; then
+    docker-compose -f docker-compose.loki.yml logs -f --tail=50
+  elif [ "$1" == "minio" ]; then
+    docker-compose -f docker-compose.minio.yml logs -f --tail=50
+  elif [ "$1" == "db" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml logs -f --tail=50
+    else
+      docker-compose -f docker-compose.db.yml logs -f --tail=50
+    fi
+  elif [ "$1" == "web" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml logs -f --tail=50
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml logs -f --tail=50
+    fi
+  elif [ "$1" == "ui" ]; then
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml logs -f --tail=50
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml logs -f --tail=50
+    fi
+  else
+    if [ "$GIN_WEB_MODE" == "staging" ]; then
+      docker-compose -f docker-compose.db.stage.yml -f docker-compose.web.stage.yml -f docker-compose.ui.stage.yml logs -f --tail=50 $1
+    else
+      docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml logs -f --tail=50 $1
+    fi
+  fi
+}
+
+function restart() {
+  stop $1
+  start $1
+}
+
+function init() {
+  restart loki && restart minio && restart db
 }
 
 function help() {
-  echo "$0 build|remote|start|stop|restart|restart loki|status|tail"
+  echo "
+  ./control.sh环境变量:
+  COMPOSE_HTTP_TIMEOUT compose连接超时时间: 默认60(秒)
+  GIN_WEB_MODE 应用模式: production/staging, 默认production
+  ./control.sh运行命令:
+  注意: str可取值loki(日志)/minio(对象存储)/db(数据库)/web(后端)/ui(前端)/container-name(容器名, 可自由设置)
+  pull str 更新容器
+  build str 构建容器
+  start str 启动容器
+  stop str 关闭容器
+  restart str 重启容器
+  run str 运行容器(关闭、更新、构建、启动)
+  top str 查看容器状态
+  tail str 查看容器日志
+  init 初始化(将会自动开启loki、minio、db)
+  "
 }
 
-if [ "$1" == "tail" ]; then
-  tail
-elif [ "$1" == "status" ]; then
-  status
+cd $WORKSPACE
+if [ "$1" == "pull" ]; then
+  pull $2
+elif [ "$1" == "run" ]; then
+  run $2
 elif [ "$1" == "start" ]; then
-  if [ "$2" == "loki" ]; then
-    startLoki
-  elif [ "$2" == "minio" ]; then
-    startMinio
-  else
-    start
-  fi
+  start $2
 elif [ "$1" == "stop" ]; then
-  if [ "$2" == "loki" ]; then
-    stopLoki
-  elif [ "$2" == "minio" ]; then
-    stopMinio
-  else
-    stop
-  fi
+  stop $2
 elif [ "$1" == "restart" ]; then
-  if [ "$2" == "loki" ]; then
-    restartLoki
-  elif [ "$2" == "minio" ]; then
-    restartMinio
-  else
-    restart
-  fi
+  restart $2
 elif [ "$1" == "build" ]; then
   build $2
-elif [ "$1" == "remote" ]; then
-  nocache
+elif [ "$1" == "top" ]; then
+  top $2
+elif [ "$1" == "tail" ]; then
+  tail $2
+elif [ "$1" == "init" ]; then
+  init $2
 else
   help
 fi

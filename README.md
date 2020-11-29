@@ -9,7 +9,9 @@ Docker Compose一键部署Gin Web, 解决构建部署烦恼
 ### 命令行
 ```
 git clone git@github.com:piupuer/gin-web-docker.git
-# 前后端项目clone到根目录下
+
+# 注意: 
+# 前后端项目指定了阿里云镜像, 如果在本地构建, 需要将前后端项目clone到根目录下
 ├── gin-web-docker # 部署构建根目录
 │   ├── gin-web # 后端项目
 │   │   └─── Dockerfile # docker镜像构建配置
@@ -19,25 +21,20 @@ git clone git@github.com:piupuer/gin-web-docker.git
 │   ├── .gitignore # git忽略文件列表
 │   ├── .dockerignore # docker忽略文件列表
 │   └── README.md # 说明文档
-cd gin-web-docker
-git clone git@github.com:piupuer/gin-web
-git clone git@github.com:piupuer/gin-web-vue
-# 为项目生成git版本号
-cd gin-web
-chmod +x version.sh
-./version.sh
-cd ../gin-web-vue
-chmod +x version.sh
-./version.sh
+# cd gin-web-docker
+# git clone git@github.com:piupuer/gin-web
+# git clone git@github.com:piupuer/gin-web-vue
+# 注释掉image, 打开build
+# vim docker-compose.web.yml
+# vim docker-compose.ui.yml
 
 # 开始构建
-cd ../
-docker-compose build
+cd gin-web-docker
+docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml build
 # 无缓存构建
-# docker-compose build --no-cache
-
+# docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml build --no-cache
 # 运行(后台启动)
-docker-compose up -d
+docker-compose -f docker-compose.db.yml -f docker-compose.web.yml -f docker-compose.ui.yml up -d
 ```
 ### shell脚本(支持unix内核系统)
 
@@ -45,7 +42,14 @@ docker-compose up -d
 git clone git@github.com:piupuer/gin-web-docker.git
 cd gin-web-docker
 chmod +x control.sh
-./control build
+# 指定远程镜像版本
+export WEB_TAG=xxx
+export UI_TAG=xxx
+# 运行必须组件(第二次就不用再执行)
+./control.sh init
+# 运行前后端
+./control.sh run gin-web-prod
+./control.sh run gin-web-vue-prod
 ```
 
 ### nginx配置
@@ -64,6 +68,29 @@ sudo vim /etc/hosts
 ```
 
 > docker-compose运行成功后, 可在浏览器中输入: [http://piupuer-local.com:10001](http://piupuer-local.com:10001), 若不能访问请检查nginx/docker-compose配置是否正确
+
+
+## Ubuntu 18.04安装docker
+```shell
+# docker
+apt-get update
+apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+add-apt-repository \
+   "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+apt-get update
+apt-get install docker-ce
+
+# docker-compose
+curl -L https://github.com/docker/compose/releases/download/1.26.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+```
 
 
 ## 互动交流

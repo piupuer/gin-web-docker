@@ -1,0 +1,37 @@
+version: '3'
+services:
+  # 前端容器
+  gin-web-vue-prod:
+    container_name: gin-web-vue-prod
+    restart: always
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-vue:${UI_TAG}
+    # build:
+    #   context: ./gin-web-vue
+    #   dockerfile: Dockerfile
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - 8081:8081
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
+    links:
+      # 为nginx配置后端访问别名, docker网桥名:应用内部访问名
+      - gin-web-prod:docker-web
+    # 挂载文件
+    volumes:
+      # 映射容器产生的日志到主机的logs文件夹
+      - vue-logs-prod-data:/var/log/nginx
+    # 设置网络
+    networks:
+      - prod-net
+
+networks:
+  prod-net:
+
+# 全局数据卷, 可容器间共享
+volumes:
+  vue-logs-prod-data:

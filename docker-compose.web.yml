@@ -1,0 +1,48 @@
+version: '3'
+services:
+  # 后端容器
+  gin-web-prod:
+    container_name: gin-web-prod
+    restart: always
+    # 本地构建使用build, 这里我在持续构建平台以及传到了阿里云镜像仓库, 因此直接使用镜像地址
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web:${WEB_TAG}
+    # build:
+    #   # 指定设定上下文根目录，然后以该目录为准指定Dockerfile
+    #   context: ./gin-web
+    #   dockerfile: Dockerfile
+    # 设置工作目录为容器内的app文件夹(容器运行时会用到)
+    working_dir: /app/gin-web-prod
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      # 映射容器产生的日志到主机的logs文件夹
+      - app-logs-prod-data:/app/gin-web-prod/logs
+      - app-conf-prod-data:/app/gin-web-prod/conf
+    # 映射端口
+    ports:
+      # 程序运行端口/性能调试端口
+      - 8080:8080
+      - 8005:8005
+    # 映射日志驱动
+    logging:
+      driver: loki
+      options:
+        # 日志推送地址
+        loki-url: http://10.13.2.252:3100/api/prom/push
+    depends_on:
+      - gin-web-mysql-prod
+      - gin-web-redis-prod
+    links:
+      # 为数据库设置别名, docker网桥名:应用内部访问名
+      - gin-web-mysql-prod:docker-mysql
+      - gin-web-redis-prod:docker-redis
+    networks:
+      - prod-net
+
+networks:
+  prod-net:
+
+# 全局数据卷, 可容器间共享
+volumes:
+  app-logs-prod-data:
+  app-conf-prod-data:
