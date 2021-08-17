@@ -1,0 +1,18 @@
+version: '3'
+services:
+  # 主节点
+  ${REDIS_MASTER_CONTAINER_NAME}:
+    container_name: ${REDIS_MASTER_CONTAINER_NAME}
+    restart: always
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ${REDIS_MASTER_CONTAINER_NAME}-data:/data
+      - ./redis-conf/${REDIS_MASTER_CONTAINER_NAME}.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+volumes:
+  ${REDIS_MASTER_CONTAINER_NAME}-data:

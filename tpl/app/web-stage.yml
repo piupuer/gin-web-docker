@@ -1,0 +1,31 @@
+version: '3'
+services:
+  # 后端容器
+  ${WEB_CONTAINER_NAME}:
+    container_name: ${WEB_CONTAINER_NAME}
+    restart: always
+    # 本地构建使用build, 这里我在持续构建平台以及传到了阿里云镜像仓库, 因此直接使用镜像地址
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-stage:${WEB_STAGE_TAG}
+    # 设置工作目录为容器内的app文件夹(容器运行时会用到)
+    working_dir: /app/gin-web-stage
+    environment:
+      TZ: Asia/Shanghai
+      CFG_SYSTEM_USE_REDIS: 'true'
+      CFG_REDIS_SENTINEL_ENABLE: 'true'
+      CFG_REDIS_SENTINEL_MASTER_NAME: '${REDIS_MASTER_NAME}'
+      CFG_REDIS_SENTINEL_ADDRESSES: '${WEB_REDIS_SENTINEL_ADDRESSES}'
+      CFG_MYSQL_HOST: '${WEB_MYSQL_HOST}'
+      CFG_MYSQL_PORT: '${WEB_MYSQL_PORT}'
+      CFG_MYSQL_PASSWORD: '${WEB_MYSQL_PASSWORD}'
+    volumes:
+      # 映射容器产生的日志到主机的logs文件夹
+      - ${WEB_CONTAINER_NAME}-logs-data:/app/gin-web-stage/logs
+      - ${WEB_CONTAINER_NAME}-conf-data:/app/gin-web-stage/conf
+    ports:
+      # 程序运行端口/性能调试端口
+      - ${WEB_PORT}:9090
+      - ${WEB_PPROF_PORT}:9005
+
+volumes:
+  ${WEB_CONTAINER_NAME}-logs-data:
+  ${WEB_CONTAINER_NAME}-conf-data:

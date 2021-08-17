@@ -1,0 +1,14 @@
+version: '3'
+services:
+  # 哨兵
+  ${REDIS_SENTINEL_CONTAINER_NAME}:
+    container_name: ${REDIS_SENTINEL_CONTAINER_NAME}
+    restart: always
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - ${REDIS_SENTINEL_PORT}:${REDIS_SENTINEL_PORT}
+    volumes:
+      - ./redis-conf/${REDIS_SENTINEL_CONTAINER_NAME}.conf:/usr/local/etc/redis/sentinel.conf
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf

@@ -1,0 +1,22 @@
+version: '3'
+services:
+  # 缓存
+  ${REDIS_SLAVE_CONTAINER_NAME}:
+    # 容器名称
+    container_name: ${REDIS_SLAVE_CONTAINER_NAME}
+    # 重启策略: 容器退出时总是重启容器
+    restart: always
+    # 指定镜像
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    ports:
+      - ${REDIS_SLAVE_PORT}:${REDIS_SLAVE_PORT}
+    environment:
+      TZ: Asia/Shanghai
+    # 挂载文件
+    volumes:
+      - ${REDIS_SLAVE_CONTAINER_NAME}-data:/data
+      - ./redis-conf/${REDIS_SLAVE_CONTAINER_NAME}.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+volumes:
+  ${REDIS_SLAVE_CONTAINER_NAME}-data:

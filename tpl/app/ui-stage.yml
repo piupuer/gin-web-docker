@@ -1,0 +1,16 @@
+version: '3'
+services:
+  ${UI_CONTAINER_NAME}:
+    container_name: ${UI_CONTAINER_NAME}
+    restart: always
+    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-vue-stage:${UI_STAGE_TAG}
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - ${UI_PORT}:9091
+    volumes:
+      - ./nginx-conf/${UI_CONTAINER_NAME}-nginx-stage.conf:/etc/nginx/nginx.conf
+      - ${UI_CONTAINER_NAME}-logs-data:/var/log/nginx
+
+volumes:
+  ${UI_CONTAINER_NAME}-logs-data:
