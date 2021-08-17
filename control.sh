@@ -410,9 +410,9 @@ function defaultFastEnv() {
   fi
   if [ "$UI_PORT" == "" ]; then
     if [ "$GIN_WEB_MODE" == "staging" ]; then
-      UI_PORT=9091
+      UI_PORT=9080
     else
-      UI_PORT=8081
+      UI_PORT=8070
     fi
   fi
   if [ "$REDIS_MASTER_NAME" == "" ]; then
