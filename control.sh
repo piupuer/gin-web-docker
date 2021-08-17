@@ -357,38 +357,38 @@ function genFastEnv() {
   start1=$WEB_PORT
   start2=$WEB_PPROF_PORT
   start3=$UI_PORT
-  for ((index = 1; index <= $1; index++)); do
+  for ((index = 0; index < $1; index++)); do
     item1=$(expr $start1 + $index)
     item2=$(expr $start2 + $index)
     item3=$(expr $start3 + $index)
     s1=$(port $(expr $item1))
     if [ $s1 -eq 1 ]; then
-      echo "第 $index 个web端口被占用: $(expr $item1)(可通过export WEB_PORT=xxx修改)"
+      echo "第 $(expr $index + 1) 个web端口被占用: $(expr $item1)(可通过export WEB_PORT=xxx修改)"
       exit
     fi
     s2=$(port $(expr $item2))
     if [ $s2 -eq 1 ]; then
-      echo "第 $index 个web pprof端口被占用: $(expr $item2)(可通过export WEB_PPROF_PORT=xxx修改)"
+      echo "第 $(expr $index + 1) 个web pprof端口被占用: $(expr $item2)(可通过export WEB_PPROF_PORT=xxx修改)"
       exit
     fi
     s3=$(port $(expr $item3))
     if [ $s3 -eq 1 ]; then
-      echo "第 $index 个ui端口被占用: $(expr $item3)(可通过export UI_PORT=xxx修改)"
+      echo "第 $(expr $index + 1) 个ui端口被占用: $(expr $item3)(可通过export UI_PORT=xxx修改)"
       exit
     fi
   done
-  for ((index = 1; index <= $1; index++)); do
+  for ((index = 0; index < $1; index++)); do
     item1=$(expr $start1 + $index)
     item2=$(expr $start2 + $index)
     item3=$(expr $start3 + $index)
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
     export WEB_CONTAINER_NAME="gin-web-prod$index"
-    echo "正在初始化第 $index 个web容器: $WEB_CONTAINER_NAME"
+    echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
     run $WEB_CONTAINER_NAME
     export UI_PORT=$item3
     export UI_CONTAINER_NAME="gin-web-vue-prod$index"
-    echo "正在初始化第 $index 个ui容器: $UI_CONTAINER_NAME"
+    echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
     run $UI_CONTAINER_NAME
   done
 }
