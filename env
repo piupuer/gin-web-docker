@@ -1,3 +1,4 @@
+export SKIP_CHECK_PORT=1
 export WEB_TAG=`cat tpl/app/web_tag`
 export UI_TAG=`cat tpl/app/ui_tag`
 export WEB_PORT=7070
