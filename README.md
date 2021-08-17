@@ -46,6 +46,8 @@ echo xxx > tpl/app/ui_tag
 # 一键启动前端后端
 # 起始端口(默认8080)
 export WEB_PORT=7070
+# redis密码
+export REDIS_PASS=123456
 # redis哨兵模式连接地址(上面配置的redis对应sentinel所在端口)
 export WEB_REDIS_SENTINEL_ADDRESSES=10.13.2.252:6182,10.13.2.252:6183,10.13.2.252:6184
 # mysql连接地址

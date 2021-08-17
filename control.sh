@@ -383,11 +383,11 @@ function genFastEnv() {
     item3=$(expr $start3 + $index)
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
-    export WEB_CONTAINER_NAME="gin-web-prod$index"
+    export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
     run $WEB_CONTAINER_NAME
     export UI_PORT=$item3
-    export UI_CONTAINER_NAME="gin-web-vue-prod$index"
+    export UI_CONTAINER_NAME="gin-web-vue-prod$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
     run $UI_CONTAINER_NAME
   done
