@@ -1,0 +1,8 @@
+export WEB_TAG=`cat tpl/app/web_tag`
+export UI_TAG=`cat tpl/app/ui_tag`
+export WEB_PORT=7070
+export WEB_REDIS_SENTINEL_ADDRESSES=10.13.2.252:6182,10.13.2.252:6183,10.13.2.252:6184
+export WEB_MYSQL_HOST=10.13.2.252
+export WEB_MYSQL_PORT=3306
+export WEB_MYSQL_PASSWORD=root
+export WEB_HOST=10.13.2.252
