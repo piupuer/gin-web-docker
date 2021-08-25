@@ -45,8 +45,8 @@ function start() {
 function stop() {
   check $1
 
-  echo "$CMD down $1"
-  sh -c "$CMD down $1"
+  echo "$CMD stop $1"
+  sh -c "$CMD stop $1"
 }
 
 function top() {
