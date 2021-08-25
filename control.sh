@@ -71,10 +71,11 @@ function check() {
   fi
   if [[ "$1" =~ "gin-web-prod" ]]; then
     export WEB_TAG=$(cat tpl/app/web_tag)
-    environment WEB_TAG WEB_PORT WEB_PPROF_PORT
+    environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
     environment REDIS_MASTER_NAME REDIS_PASS WEB_REDIS_SENTINEL_ADDRESSES
     environment WEB_MYSQL_HOST WEB_MYSQL_PORT WEB_MYSQL_PASSWORD
     cat tpl/app/web.yml |
+      sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
@@ -87,10 +88,11 @@ function check() {
       sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-stage" ]]; then
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
-    environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT
+    environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
     environment REDIS_MASTER_NAME REDIS_PASS WEB_REDIS_SENTINEL_ADDRESSES
     environment WEB_MYSQL_HOST WEB_MYSQL_PORT
     cat tpl/app/web-stage.yml |
+      sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_STAGE_TAG}/${WEB_STAGE_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
@@ -381,6 +383,7 @@ function genFastEnv() {
     item1=$(expr $start1 + $index)
     item2=$(expr $start2 + $index)
     item3=$(expr $start3 + $index)
+    export MACHINE_ID=$index
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
     export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"

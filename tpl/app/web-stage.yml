@@ -10,6 +10,7 @@ services:
     working_dir: /app/gin-web-stage
     environment:
       TZ: Asia/Shanghai
+      CFG_SYSTEM_MACHINE_ID: '${MACHINE_ID}'
       CFG_SYSTEM_USE_REDIS: 'true'
       CFG_REDIS_SENTINEL_ENABLE: 'true'
       CFG_REDIS_SENTINEL_MASTER_NAME: '${REDIS_MASTER_NAME}'
