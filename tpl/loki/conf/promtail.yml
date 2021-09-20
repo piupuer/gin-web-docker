@@ -1,0 +1,26 @@
+server:
+  http_listen_port: ${LOKI_PROMTAIL_PORT}
+  grpc_listen_port: 0
+  log_level: "debug"
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki-gateway:${LOKI_GATEWAY_PORT}/loki/api/v1/push
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/*log
+  - job_name: docker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: dockerlogs
+          __path__: /var/lib/docker/containers/*/*-json.log

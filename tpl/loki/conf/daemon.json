@@ -1,0 +1,6 @@
+{
+  "registry-mirrors": [
+    "https://fcvhrcw9.mirror.aliyuncs.com"
+  ],
+  "bip": "${DOCKER_BIP}"
+}

@@ -110,7 +110,7 @@ chmod +x /usr/local/bin/docker-compose
 
 ### QQ群：943724601
 
-<img src="https://github.com/piupuer/gin-web/blob/contact/images/qq.jpeg?raw=true" width="256" alt="QQ群" />
+<img src="https://github.com/piupuer/gin-web-images/blob/master/contact/qq_group.jpeg?raw=true" width="256" alt="QQ群" />
 
 ## MIT License
 

@@ -5,8 +5,11 @@ WORKSPACE=$(
   pwd
 )
 
+export COMPOSE_HTTP_TIMEOUT=30
+
 mkdir -p run/redis-conf
 mkdir -p run/nginx-conf
+mkdir -p run/loki-conf
 
 function run() {
   check $1
@@ -40,6 +43,13 @@ function start() {
 
   echo "$CMD up -d $1"
   sh -c "$CMD up -d $1"
+}
+
+function up() {
+  check $1
+
+  echo "$CMD up -d"
+  sh -c "$CMD up -d"
 }
 
 function stop() {
@@ -172,6 +182,34 @@ function check() {
     cat tpl/redis/redis-slave.yml |
       sed "s/\${REDIS_SLAVE_PORT}/${REDIS_SLAVE_PORT}/g" |
       sed "s/\${REDIS_SLAVE_CONTAINER_NAME}/${REDIS_SLAVE_CONTAINER_NAME}/g" >run/$1.yml
+  elif [[ "$1" =~ "loki" ]]; then
+    environment LOCAL_IP DOCKER_BIP
+    environment LOKI_PORT LOKI_FRONTEND_PORT LOKI_FRONTEND_PORT LOKI_GATEWAY_PORT LOKI_PROMTAIL_PORT LOKI_GRAFANA_PORT LOKI_MEMBER_PORT
+    cat tpl/loki/loki.yml |
+      sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
+      sed "s/\${LOKI_FRONTEND_PORT}/${LOKI_FRONTEND_PORT}/g" |
+      sed "s/\${LOKI_FRONTEND_PORT}/${LOKI_FRONTEND_PORT}/g" |
+      sed "s/\${LOKI_GATEWAY_PORT}/${LOKI_GATEWAY_PORT}/g" |
+      sed "s/\${LOKI_PROMTAIL_PORT}/${LOKI_PROMTAIL_PORT}/g" |
+      sed "s/\${LOKI_GRAFANA_PORT}/${LOKI_GRAFANA_PORT}/g" |
+      sed "s/\${LOKI_MEMBER_PORT}/${LOKI_MEMBER_PORT}/g" >run/$1.yml
+    cat tpl/loki/conf/boltdb-shipper.yml |
+      sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
+      sed "s/\${LOKI_MEMBER_PORT}/${LOKI_MEMBER_PORT}/g" >run/loki-conf/boltdb-shipper.yml
+    cat tpl/loki/conf/promtail.yml |
+      sed "s/\${LOKI_PROMTAIL_PORT}/${LOKI_PROMTAIL_PORT}/g" |
+      sed "s/\${LOKI_GATEWAY_PORT}/${LOKI_GATEWAY_PORT}/g" >run/loki-conf/promtail.yml
+    cat tpl/loki/conf/gateway.conf |
+      sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
+      sed "s/\${LOKI_GATEWAY_PORT}/${LOKI_GATEWAY_PORT}/g" >run/loki-conf/gateway.conf
+    cat tpl/loki/conf/gateway.conf |
+      sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
+      sed "s/\${LOKI_GATEWAY_PORT}/${LOKI_GATEWAY_PORT}/g" >run/loki-conf/gateway.conf
+    cat tpl/loki/conf/daemon.json |
+      sed "s/\${LOCAL_IP}/${LOCAL_IP}/g" |
+      sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
+      sed "s#\${DOCKER_BIP}#${DOCKER_BIP}#g" >/etc/docker/daemon.json
+    cp tpl/sources.list run/sources.list
   fi
   CMD="docker-compose -f $WORKSPACE/run/$1.yml"
 }
@@ -431,6 +469,43 @@ function defaultFastEnv() {
   export WEB_MYSQL_PASSWORD=$WEB_MYSQL_PASSWORD
 }
 
+function loki() {
+  defaultLokiEnv $1
+  up loki
+}
+
+function defaultLokiEnv() {
+  if [ "$DOCKER_BIP" == "" ]; then
+    DOCKER_BIP="172.15.0.1/16"
+  fi
+  if [ "$LOKI_PORT" == "" ]; then
+    LOKI_PORT=3100
+  fi
+  if [ "$LOKI_FRONTEND_PORT" == "" ]; then
+    LOKI_FRONTEND_PORT=3200
+  fi
+  if [ "$LOKI_GATEWAY_PORT" == "" ]; then
+    LOKI_GATEWAY_PORT=3300
+  fi
+  if [ "$LOKI_PROMTAIL_PORT" == "" ]; then
+    LOKI_PROMTAIL_PORT=3080
+  fi
+  if [ "$LOKI_GRAFANA_PORT" == "" ]; then
+    LOKI_GRAFANA_PORT=3000
+  fi
+  if [ "$LOKI_MEMBER_PORT" == "" ]; then
+    LOKI_MEMBER_PORT=7946
+  fi
+  export DOCKER_BIP=$DOCKER_BIP
+  export LOKI_PORT=$LOKI_PORT
+  export LOKI_FRONTEND_PORT=$LOKI_FRONTEND_PORT
+  export LOKI_FRONTEND_PORT=$LOKI_FRONTEND_PORT
+  export LOKI_GATEWAY_PORT=$LOKI_GATEWAY_PORT
+  export LOKI_PROMTAIL_PORT=$LOKI_PROMTAIL_PORT
+  export LOKI_GRAFANA_PORT=$LOKI_GRAFANA_PORT
+  export LOKI_MEMBER_PORT=$LOKI_MEMBER_PORT
+}
+
 function port() {
   if [ "$SKIP_CHECK_PORT" != "" ]; then
     echo 0
@@ -471,6 +546,7 @@ function help() {
   tail str 查看容器日志
   id str 写入当前机器编号
   sentinel str 一键启动redis主从哨兵模式, str表示哨兵数, 默认3(一主两从)
+  loki 一键启动loki
   fast str 一键启动前端后端, str表示副本数量, 默认1(一个后端一个前端, 如果大于1会自动拷贝副本)
   "
 }
@@ -494,6 +570,8 @@ elif [ "$1" == "tail" ]; then
   tail $2
 elif [ "$1" == "sentinel" ]; then
   sentinel $2
+elif [ "$1" == "loki" ]; then
+  loki
 elif [ "$1" == "fast" ]; then
   fast $2
 elif [ "$1" == "id" ]; then

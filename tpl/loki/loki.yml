@@ -1,0 +1,99 @@
+version: "3"
+
+services:
+  grafana:
+    image: grafana/grafana:7.3.4
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+    ports:
+      - ${LOKI_GRAFANA_PORT}:${LOKI_GRAFANA_PORT}
+    networks:
+      - loki
+
+  promtail:
+    image: grafana/promtail:2.0.0
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - ./loki-conf:/etc/promtail/
+    ports:
+      - ${LOKI_PROMTAIL_PORT}:${LOKI_PROMTAIL_PORT}
+    command: -config.file=/etc/promtail/promtail.yml
+    networks:
+      - loki
+
+  loki-gateway:
+    image: nginx:1.19
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - ./loki-conf/gateway.conf:/etc/nginx/nginx.conf
+    ports:
+      - ${LOKI_GATEWAY_PORT}:${LOKI_GATEWAY_PORT}
+      - ${LOKI_PORT}:${LOKI_PORT}
+    networks:
+      - loki
+
+  loki-frontend:
+    image: grafana/loki:2.0.0
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - ./loki-conf:/etc/loki/
+    ports:
+      - "${LOKI_PORT}"
+    command: "-config.file=/etc/loki/boltdb-shipper.yml -target=query-frontend"
+    networks:
+      - loki
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  loki-1:
+    image: grafana/loki:2.0.0
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - ./loki-conf:/etc/loki/
+      - .loki-chunks-data:/loki/chunks/
+    ports:
+      - "${LOKI_PORT}"
+      - "${LOKI_MEMBER_PORT}"
+    command: "-config.file=/etc/loki/boltdb-shipper.yml -target=all"
+    networks:
+      - loki
+    restart: on-failure
+
+  loki-2:
+    image: grafana/loki:2.0.0
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - ./loki-conf:/etc/loki/
+      - loki-chunks-data:/loki/chunks/
+    ports:
+      - "${LOKI_PORT}"
+      - "${LOKI_MEMBER_PORT}"
+    command: "-config.file=/etc/loki/boltdb-shipper.yml -target=all"
+    # command: "-config.file=/etc/loki/loki-config.yml"
+    networks:
+      - loki
+    restart: on-failure
+
+  loki-3:
+    image: grafana/loki:2.0.0
+    volumes:
+      - ./sources.list:/etc/apt/sources.list
+      - ./loki-conf:/etc/loki/
+      - loki-chunks-data:/loki/chunks/
+    ports:
+      - "${LOKI_PORT}"
+      - "${LOKI_MEMBER_PORT}"
+    command: "-config.file=/etc/loki/boltdb-shipper.yml -target=all"
+    # command: "-config.file=/etc/loki/loki-config.yml"
+    networks:
+      - loki
+    restart: on-failure
+
+networks:
+  loki:
+
+volumes:
+  loki-chunks-data:
