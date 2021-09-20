@@ -210,6 +210,8 @@ function check() {
       sed "s/\${LOKI_PORT}/${LOKI_PORT}/g" |
       sed "s#\${DOCKER_BIP}#${DOCKER_BIP}#g" >/etc/docker/daemon.json
     cp tpl/sources.list run/sources.list
+    systemctl daemon-reload
+    systemctl restart docker
   fi
   CMD="docker-compose -f $WORKSPACE/run/$1.yml"
 }
