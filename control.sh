@@ -20,6 +20,8 @@ function run() {
   pull $1
   # 构建
   build $1
+  # 创建
+  create $1
   # 启动
   start $1
 }
@@ -36,6 +38,13 @@ function build() {
 
   echo "$CMD build $1"
   sh -c "$CMD build $1"
+}
+
+function start() {
+  check $1
+
+  echo "$CMD create $1"
+  sh -c "$CMD create $1"
 }
 
 function start() {
@@ -375,62 +384,17 @@ function genRedisEnv() {
 }
 
 function fast() {
-  if [ "$1" -gt 1 ]; then
-    genFastEnv $1
+  if [ "$1" == "web" ]; then
+    runFastWeb $1
+  elif [ "$1" == "ui" ]; then
+    runFastUi $1
+  else
+    runFastWeb $1
+    runFastUi $1
   fi
 }
 
-function genFastEnv() {
-  defaultFastEnv
-  if [ $WEB_PORT -lt 1024 ]; then
-    echo 'web端口>1023'
-    exit
-  fi
-  if [ $UI_PORT -lt 1024 ]; then
-    echo 'ui端口>1023'
-    exit
-  fi
-  start1=$WEB_PORT
-  start2=$WEB_PPROF_PORT
-  start3=$UI_PORT
-  for ((index = 0; index < $1; index++)); do
-    item1=$(expr $start1 + $index)
-    item2=$(expr $start2 + $index)
-    item3=$(expr $start3 + $index)
-    s1=$(port $(expr $item1))
-    if [ $s1 -eq 1 ]; then
-      echo "第 $(expr $index + 1) 个web端口被占用: $(expr $item1)(可通过export WEB_PORT=xxx修改)"
-      exit
-    fi
-    s2=$(port $(expr $item2))
-    if [ $s2 -eq 1 ]; then
-      echo "第 $(expr $index + 1) 个web pprof端口被占用: $(expr $item2)(可通过export WEB_PPROF_PORT=xxx修改)"
-      exit
-    fi
-    s3=$(port $(expr $item3))
-    if [ $s3 -eq 1 ]; then
-      echo "第 $(expr $index + 1) 个ui端口被占用: $(expr $item3)(可通过export UI_PORT=xxx修改)"
-      exit
-    fi
-  done
-  for ((index = 0; index < $1; index++)); do
-    item1=$(expr $start1 + $index)
-    item2=$(expr $start2 + $index)
-    item3=$(expr $start3 + $index)
-    export MACHINE_ID=$index
-    export WEB_PORT=$item1
-    export WEB_PPROF_PORT=$item2
-    export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"
-    echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
-    run $WEB_CONTAINER_NAME
-    export UI_PORT=$item3
-    export UI_CONTAINER_NAME="gin-web-vue-prod$(expr $index + 1)"
-    echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
-    run $UI_CONTAINER_NAME
-  done
-}
-
-function defaultFastEnv() {
+function runFastWeb() {
   if [ "$WEB_PORT" == "" ]; then
     if [ "$GIN_WEB_MODE" == "staging" ]; then
       WEB_PORT=9090
@@ -444,7 +408,46 @@ function defaultFastEnv() {
     else
       WEB_PPROF_PORT=8005
     fi
+    if [ "$WEB_MYSQL_PASSWORD" == "" ]; then
+      WEB_MYSQL_PASSWORD=root
+    fi
   fi
+  export WEB_PORT=$WEB_PORT
+  export WEB_PPROF_PORT=$WEB_PPROF_PORT
+  export WEB_MYSQL_PASSWORD=$WEB_MYSQL_PASSWORD
+  if [ $WEB_PORT -lt 1024 ]; then
+    echo 'web端口>1023'
+    exit
+  fi
+  start1=$WEB_PORT
+  start2=$WEB_PPROF_PORT
+  for ((index = 0; index < $1; index++)); do
+    item1=$(expr $start1 + $index)
+    item2=$(expr $start2 + $index)
+    s1=$(port $(expr $item1))
+    if [ $s1 -eq 1 ]; then
+      echo "第 $(expr $index + 1) 个web端口被占用: $(expr $item1)(可通过export WEB_PORT=xxx修改)"
+      exit
+    fi
+    s2=$(port $(expr $item2))
+    if [ $s2 -eq 1 ]; then
+      echo "第 $(expr $index + 1) 个web pprof端口被占用: $(expr $item2)(可通过export WEB_PPROF_PORT=xxx修改)"
+      exit
+    fi
+  done
+  for ((index = 0; index < $1; index++)); do
+    item1=$(expr $start1 + $index)
+    item2=$(expr $start2 + $index)
+    export MACHINE_ID=$index
+    export WEB_PORT=$item1
+    export WEB_PPROF_PORT=$item2
+    export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"
+    echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
+    run $WEB_CONTAINER_NAME
+  done
+}
+
+function runFastUi() {
   if [ "$UI_PORT" == "" ]; then
     if [ "$GIN_WEB_MODE" == "staging" ]; then
       UI_PORT=9080
@@ -452,17 +455,29 @@ function defaultFastEnv() {
       UI_PORT=8070
     fi
   fi
-  if [ "$REDIS_MASTER_NAME" == "" ]; then
-    REDIS_MASTER_NAME=prod
-  fi
-  if [ "$WEB_MYSQL_PASSWORD" == "" ]; then
-    WEB_MYSQL_PASSWORD=root
-  fi
-  export WEB_PORT=$WEB_PORT
-  export WEB_PPROF_PORT=$WEB_PPROF_PORT
   export UI_PORT=$UI_PORT
-  export REDIS_MASTER_NAME=$REDIS_MASTER_NAME
-  export WEB_MYSQL_PASSWORD=$WEB_MYSQL_PASSWORD
+  if [ $UI_PORT -lt 1024 ]; then
+    echo 'ui端口>1023'
+    exit
+  fi
+  start3=$UI_PORT
+  for ((index = 0; index < $1; index++)); do
+    item3=$(expr $start3 + $index)
+    s1=$(port $(expr $item1))
+    s3=$(port $(expr $item3))
+    if [ $s3 -eq 1 ]; then
+      echo "第 $(expr $index + 1) 个ui端口被占用: $(expr $item3)(可通过export UI_PORT=xxx修改)"
+      exit
+    fi
+  done
+  for ((index = 0; index < $1; index++)); do
+    item3=$(expr $start3 + $index)
+    export MACHINE_ID=$index
+    export UI_PORT=$item3
+    export UI_CONTAINER_NAME="gin-web-vue-prod$(expr $index + 1)"
+    echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
+    run $UI_CONTAINER_NAME
+  done
 }
 
 function loki() {
