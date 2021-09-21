@@ -385,9 +385,9 @@ function genRedisEnv() {
 
 function fast() {
   if [ "$1" == "web" ]; then
-    runFastWeb $1
+    runFastWeb $2
   elif [ "$1" == "ui" ]; then
-    runFastUi $1
+    runFastUi $2
   else
     runFastWeb $1
     runFastUi $1
@@ -584,7 +584,7 @@ elif [ "$1" == "sentinel" ]; then
 elif [ "$1" == "loki" ]; then
   loki
 elif [ "$1" == "fast" ]; then
-  fast $2
+  fast $2 $3
 elif [ "$1" == "id" ]; then
   id $2
 else
