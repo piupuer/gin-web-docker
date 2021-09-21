@@ -89,7 +89,7 @@ function check() {
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s/\${WEB_REDIS_URI}/${WEB_REDIS_URI}/g" |
+      sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
       sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
       sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
       sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
@@ -103,7 +103,7 @@ function check() {
       sed "s/\${WEB_STAGE_TAG}/${WEB_STAGE_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s/\${WEB_REDIS_URI}/${WEB_REDIS_URI}/g" |
+      sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
       sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
       sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
       sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
