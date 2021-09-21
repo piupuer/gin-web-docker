@@ -9,6 +9,7 @@ services:
       - ${LOKI_GRAFANA_PORT}:${LOKI_GRAFANA_PORT}
     networks:
       - loki
+    restart: always
 
   promtail:
     image: grafana/promtail:2.0.0
@@ -22,6 +23,7 @@ services:
     command: -config.file=/etc/promtail/promtail.yml
     networks:
       - loki
+    restart: always
 
   loki-gateway:
     image: nginx:1.19
@@ -33,6 +35,7 @@ services:
       - ${LOKI_PORT}:${LOKI_PORT}
     networks:
       - loki
+    restart: always
 
   loki-frontend:
     image: grafana/loki:2.0.0
@@ -47,6 +50,7 @@ services:
     deploy:
       mode: replicated
       replicas: 2
+    restart: always
 
   loki-1:
     image: grafana/loki:2.0.0
