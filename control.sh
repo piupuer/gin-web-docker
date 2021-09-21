@@ -82,34 +82,28 @@ function check() {
   if [[ "$1" =~ "gin-web-prod" ]]; then
     export WEB_TAG=$(cat tpl/app/web_tag)
     environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment REDIS_MASTER_NAME REDIS_PASS WEB_REDIS_SENTINEL_ADDRESSES
-    environment WEB_MYSQL_HOST WEB_MYSQL_PORT WEB_MYSQL_PASSWORD
+    environment WEB_REDIS_URI WEB_MYSQL_HOST WEB_MYSQL_PORT WEB_MYSQL_PASSWORD
     cat tpl/app/web.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s/\${REDIS_MASTER_NAME}/${REDIS_MASTER_NAME}/g" |
-      sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" |
-      sed "s/\${WEB_REDIS_SENTINEL_ADDRESSES}/${WEB_REDIS_SENTINEL_ADDRESSES}/g" |
+      sed "s/\${WEB_REDIS_URI}/${WEB_REDIS_URI}/g" |
       sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
       sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
       sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-stage" ]]; then
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
     environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment REDIS_MASTER_NAME REDIS_PASS WEB_REDIS_SENTINEL_ADDRESSES
-    environment WEB_MYSQL_HOST WEB_MYSQL_PORT
+    environment WEB_REDIS_URI WEB_MYSQL_HOST WEB_MYSQL_PORT
     cat tpl/app/web-stage.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_STAGE_TAG}/${WEB_STAGE_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s/\${REDIS_MASTER_NAME}/${REDIS_MASTER_NAME}/g" |
-      sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" |
-      sed "s/\${WEB_REDIS_SENTINEL_ADDRESSES}/${WEB_REDIS_SENTINEL_ADDRESSES}/g" |
+      sed "s/\${WEB_REDIS_URI}/${WEB_REDIS_URI}/g" |
       sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
       sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
       sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
