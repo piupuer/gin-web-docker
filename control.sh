@@ -41,8 +41,8 @@ function build() {
 function start() {
   check $1
 
-  echo "$CMD up -d $1"
-  sh -c "$CMD up -d $1"
+  echo "$CMD start $1"
+  sh -c "$CMD start $1"
 }
 
 function up() {
