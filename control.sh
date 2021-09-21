@@ -40,7 +40,7 @@ function build() {
   sh -c "$CMD build $1"
 }
 
-function start() {
+function create() {
   check $1
 
   echo "$CMD create $1"
