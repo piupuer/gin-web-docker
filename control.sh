@@ -20,8 +20,6 @@ function run() {
   pull $1
   # 构建
   build $1
-  # 创建
-  create $1
   # 启动
   start $1
 }
@@ -40,18 +38,11 @@ function build() {
   sh -c "$CMD build $1"
 }
 
-function create() {
-  check $1
-
-  echo "$CMD create $1"
-  sh -c "$CMD create $1"
-}
-
 function start() {
   check $1
 
-  echo "$CMD start $1"
-  sh -c "$CMD start $1"
+  echo "$CMD up -d $1"
+  sh -c "$CMD up -d $1"
 }
 
 function up() {
