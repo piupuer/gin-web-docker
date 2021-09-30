@@ -57,7 +57,9 @@ services:
     volumes:
       - ./sources.list:/etc/apt/sources.list
       - ./loki-conf:/etc/loki/
-      - .loki-chunks-data:/loki/chunks/
+      - loki-chunks-data:/loki/chunks/
+    environment:
+      - privileged=true
     ports:
       - "${LOKI_PORT}"
       - "${LOKI_MEMBER_PORT}"
@@ -72,6 +74,8 @@ services:
       - ./sources.list:/etc/apt/sources.list
       - ./loki-conf:/etc/loki/
       - loki-chunks-data:/loki/chunks/
+    environment:
+      - privileged=true
     ports:
       - "${LOKI_PORT}"
       - "${LOKI_MEMBER_PORT}"
@@ -87,6 +91,8 @@ services:
       - ./sources.list:/etc/apt/sources.list
       - ./loki-conf:/etc/loki/
       - loki-chunks-data:/loki/chunks/
+    environment:
+      - privileged=true
     ports:
       - "${LOKI_PORT}"
       - "${LOKI_MEMBER_PORT}"
