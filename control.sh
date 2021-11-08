@@ -83,6 +83,7 @@ function check() {
     export WEB_TAG=$(cat tpl/app/web_tag)
     environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
     environment WEB_REDIS_URI WEB_MYSQL_URI
+    export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
     cat tpl/app/web.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
@@ -95,6 +96,7 @@ function check() {
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
     environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
     environment WEB_REDIS_URI WEB_MYSQL_URI
+    export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
     cat tpl/app/web-stage.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
