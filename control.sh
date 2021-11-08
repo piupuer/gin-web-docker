@@ -82,7 +82,7 @@ function check() {
   if [[ "$1" =~ "gin-web-prod" ]]; then
     export WEB_TAG=$(cat tpl/app/web_tag)
     environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment WEB_REDIS_URI WEB_MYSQL_HOST WEB_MYSQL_PORT WEB_MYSQL_PASSWORD
+    environment WEB_REDIS_URI WEB_MYSQL_URI
     cat tpl/app/web.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
@@ -90,13 +90,11 @@ function check() {
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
       sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
-      sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
-      sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
+      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-stage" ]]; then
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
     environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment WEB_REDIS_URI WEB_MYSQL_HOST WEB_MYSQL_PORT
+    environment WEB_REDIS_URI WEB_MYSQL_URI
     cat tpl/app/web-stage.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
@@ -104,9 +102,7 @@ function check() {
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
       sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_HOST}/${WEB_MYSQL_HOST}/g" |
-      sed "s/\${WEB_MYSQL_PORT}/${WEB_MYSQL_PORT}/g" |
-      sed "s/\${WEB_MYSQL_PASSWORD}/${WEB_MYSQL_PASSWORD}/g" >run/$1.yml
+      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-vue-prod" ]]; then
     export UI_TAG=$(cat tpl/app/ui_tag)
     environment UI_TAG UI_PORT
@@ -399,13 +395,9 @@ function runFastWeb() {
     else
       WEB_PPROF_PORT=8005
     fi
-    if [ "$WEB_MYSQL_PASSWORD" == "" ]; then
-      WEB_MYSQL_PASSWORD=root
-    fi
   fi
   export WEB_PORT=$WEB_PORT
   export WEB_PPROF_PORT=$WEB_PPROF_PORT
-  export WEB_MYSQL_PASSWORD=$WEB_MYSQL_PASSWORD
   if [ $WEB_PORT -lt 1024 ]; then
     echo 'web端口>1023'
     exit
