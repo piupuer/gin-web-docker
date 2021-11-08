@@ -90,7 +90,7 @@ function check() {
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
       sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
+      sed "s#\${WEB_MYSQL_URI}#${WEB_MYSQL_URI}#g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-stage" ]]; then
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
     environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
@@ -102,7 +102,7 @@ function check() {
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
       sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
+      sed "s#\${WEB_MYSQL_URI}#${WEB_MYSQL_URI}#g" >run/$1.yml
   elif [[ "$1" =~ "gin-web-vue-prod" ]]; then
     export UI_TAG=$(cat tpl/app/ui_tag)
     environment UI_TAG UI_PORT
