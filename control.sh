@@ -79,31 +79,25 @@ function check() {
     echo "请指定容器名" && exit 1
     return
   fi
-  if [[ "$1" =~ "gin-web-prod" ]]; then
+  if [[ "$1" =~ "gssy-web-prod" ]]; then
     export WEB_TAG=$(cat tpl/app/web_tag)
     environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment WEB_REDIS_URI WEB_MYSQL_URI
     cat tpl/app/web.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
-      sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
-  elif [[ "$1" =~ "gin-web-stage" ]]; then
+      sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" >run/$1.yml
+  elif [[ "$1" =~ "gssy-web-stage" ]]; then
     export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
     environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment WEB_REDIS_URI WEB_MYSQL_URI
     cat tpl/app/web-stage.yml |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_STAGE_TAG}/${WEB_STAGE_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
-      sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s/\${WEB_MYSQL_URI}/${WEB_MYSQL_URI}/g" >run/$1.yml
-  elif [[ "$1" =~ "gin-web-vue-prod" ]]; then
+      sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" >run/$1.yml
+  elif [[ "$1" =~ "gssy-cms-prod" ]]; then
     export UI_TAG=$(cat tpl/app/ui_tag)
     environment UI_TAG UI_PORT
     environment WEB_HOST WEB_PORT
@@ -114,7 +108,7 @@ function check() {
     cat tpl/app/nginx/nginx.conf |
       sed "s/\${WEB_HOST}/${WEB_HOST}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" >run/nginx-conf/$1-nginx.conf
-  elif [[ "$1" =~ "gin-web-vue-stage" ]]; then
+  elif [[ "$1" =~ "gssy-cms-stage" ]]; then
     export UI_STAGE_TAG=$(cat tpl/app/ui_tag)
     environment UI_STAGE_TAG UI_PORT
     environment WEB_HOST WEB_PORT
@@ -383,14 +377,14 @@ function fast() {
 
 function runFastWeb() {
   if [ "$WEB_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$GSSY_WEB_MODE" == "staging" ]; then
       WEB_PORT=9090
     else
       WEB_PORT=8080
     fi
   fi
   if [ "$WEB_PPROF_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$GSSY_WEB_MODE" == "staging" ]; then
       WEB_PPROF_PORT=9005
     else
       WEB_PPROF_PORT=8005
@@ -424,7 +418,7 @@ function runFastWeb() {
     export MACHINE_ID=$index
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
-    export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"
+    export WEB_CONTAINER_NAME="gssy-web-prod$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
     run $WEB_CONTAINER_NAME
   done
@@ -432,7 +426,7 @@ function runFastWeb() {
 
 function runFastUi() {
   if [ "$UI_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$GSSY_WEB_MODE" == "staging" ]; then
       UI_PORT=9080
     else
       UI_PORT=8070
@@ -457,7 +451,7 @@ function runFastUi() {
     item3=$(expr $start3 + $index)
     export MACHINE_ID=$index
     export UI_PORT=$item3
-    export UI_CONTAINER_NAME="gin-web-vue-prod$(expr $index + 1)"
+    export UI_CONTAINER_NAME="gssy-cms-prod$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
     run $UI_CONTAINER_NAME
   done
@@ -527,7 +521,7 @@ function help() {
   echo "
   ./control.sh环境变量:
   COMPOSE_HTTP_TIMEOUT compose连接超时时间: 默认60(秒)
-  GIN_WEB_MODE 应用模式: production/staging, 默认production
+  GSSY_WEB_MODE 应用模式: production/staging, 默认production
   ./control.sh运行命令:
   注意: str可取值web(后端)/ui(前端)/container-name(容器名, 可自由设置)
   pull str 更新容器
