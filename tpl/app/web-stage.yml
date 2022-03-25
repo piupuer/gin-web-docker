@@ -5,9 +5,9 @@ services:
     container_name: ${WEB_CONTAINER_NAME}
     restart: always
     # 本地构建使用build, 这里我在持续构建平台以及传到了阿里云镜像仓库, 因此直接使用镜像地址
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/gin-web-stage:${WEB_STAGE_TAG}
+    image: registry.cn-hangzhou.aliyuncs.com/zw-gssy/gssy-web-stage:${WEB_STAGE_TAG}
     # 设置工作目录为容器内的app文件夹(容器运行时会用到)
-    working_dir: /app/gin-web-stage
+    working_dir: /app/gssy-web-stage
     environment:
       TZ: Asia/Shanghai
       CFG_SYSTEM_MACHINE_ID: '${MACHINE_ID}'
@@ -18,8 +18,8 @@ services:
       CFG_MYSQL_PASSWORD: '${WEB_MYSQL_PASSWORD}'
     volumes:
       # 映射容器产生的日志到主机的logs文件夹
-      - ${WEB_CONTAINER_NAME}-logs-data:/app/gin-web-stage/logs
-      - ${WEB_CONTAINER_NAME}-conf-data:/app/gin-web-stage/conf
+      - ${WEB_CONTAINER_NAME}-logs-data:/app/gssy-web-stage/logs
+      - ${WEB_CONTAINER_NAME}-conf-data:/app/gssy-web-stage/conf
     ports:
       # 程序运行端口/性能调试端口
       - ${WEB_PORT}:9090
