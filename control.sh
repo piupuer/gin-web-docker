@@ -76,9 +76,9 @@ function check() {
     return
   fi
   environment MAX_CPU MAX_MEMORY
-  if [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
+  if [[ -n "$WEB_NAME" ]] && [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
     export WEB_IMAGE=$(cat tpl/app/web_image)
-    environment WEB_IMAGE WEB_HOME
+    environment WEB_IMAGE WEB_HOME WEB_HEALTH_CHECK
     environment WEB_PORT WEB_PPROF_PORT WEB_INTERNAL_PORT WEB_INTERNAL_PPROF_PORT MACHINE_ID
     environment WEB_REDIS_URI WEB_MYSQL_URI
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
@@ -87,6 +87,7 @@ function check() {
       sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s#\${WEB_IMAGE}#${WEB_IMAGE}#g" |
       sed "s#\${WEB_HOME}#${WEB_HOME}#g" |
+      sed "s#\${WEB_HEALTH_CHECK}#${WEB_HEALTH_CHECK}#g" |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
@@ -99,9 +100,9 @@ function check() {
     cat run/$1-tmp.yml | sed 's/\\\&/\&/g' >run/$1.yml
     rm run/$1-tmp.yml
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/\\&/\&/g')
-  elif [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
+  elif [[ -n "$UI_NAME" ]] && [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
     export UI_IMAGE=$(cat tpl/app/ui_image)
-    environment UI_IMAGE
+    environment UI_IMAGE UI_HEALTH_CHECK
     environment UI_PORT UI_INTERNAL_PORT
     environment WEB_HOST WEB_PORT NGINX_UPSTREAM
     cat tpl/app/ui.yml |
@@ -109,6 +110,7 @@ function check() {
       sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${UI_CONTAINER_NAME}/$1/g" |
       sed "s#\${UI_IMAGE}#${UI_IMAGE}#g" |
+      sed "s#\${UI_HEALTH_CHECK}#${UI_HEALTH_CHECK}#g" |
       sed "s/\${UI_PORT}/${UI_PORT}/g" |
       sed "s/\${UI_INTERNAL_PORT}/${UI_INTERNAL_PORT}/g" >run/$1.yml
     cat tpl/app/nginx/nginx.conf |
@@ -426,11 +428,17 @@ function runFastWeb() {
       WEB_INTERNAL_PPROF_PORT=8005
     fi
   fi
+  if [ "$RUN_MODE" == "stage" ]; then
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   export WEB_HOME=$WEB_HOME
   export WEB_PORT=$WEB_PORT
   export WEB_PPROF_PORT=$WEB_PPROF_PORT
   export WEB_INTERNAL_PORT=$WEB_INTERNAL_PORT
   export WEB_INTERNAL_PPROF_PORT=$WEB_INTERNAL_PPROF_PORT
+  export WEB_HEALTH_CHECK=$WEB_HEALTH_CHECK
   if [ $WEB_PORT -lt 1024 ]; then
     echo 'web port minimum is 1024'
     exit
@@ -457,8 +465,6 @@ function runFastWeb() {
     export MACHINE_ID=$index
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
-    export WEB_INTERNAL_PORT=$item1
-    export WEB_INTERNAL_PPROF_PORT=$item2
     export WEB_CONTAINER_TMP_NAME=$WEB_CONTAINER_NAME
     export WEB_CONTAINER_NAME="$WEB_CONTAINER_NAME$(expr $index + 1)"
     echo "Initializing $(expr $index + 1) web container: $WEB_CONTAINER_NAME"
@@ -497,16 +503,21 @@ function runFastUi() {
       UI_INTERNAL_PORT=8070
     fi
   fi
+  if [ "$RUN_MODE" == "stage" ]; then
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   export UI_PORT=$UI_PORT
   export UI_INTERNAL_PORT=$UI_INTERNAL_PORT
+  export UI_HEALTH_CHECK=$UI_HEALTH_CHECK
   export NGINX_UPSTREAM=$NGINX_UPSTREAM
   if [ $UI_PORT -lt 1024 ]; then
     echo 'ui port minimum is 1024'
     exit
   fi
   start3=$UI_PORT
-  start4=$UI_INTERNAL_PORT
-  start5=$WEB_PORT
+  start4=$WEB_PORT
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     s3=$(port $(expr $item3))
@@ -518,11 +529,9 @@ function runFastUi() {
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     item4=$(expr $start4 + $index)
-    item5=$(expr $start5 + $index)
     export MACHINE_ID=$index
     export UI_PORT=$item3
-    export UI_INTERNAL_PORT=$item4
-    export WEB_PORT=$item5
+    export WEB_PORT=$item4
     export UI_CONTAINER_TMP_NAME=$UI_CONTAINER_NAME
     export UI_CONTAINER_NAME="$UI_CONTAINER_NAME$(expr $index + 1)"
     echo "Initializing $(expr $index + 1) ui container: $UI_CONTAINER_NAME"
