@@ -79,63 +79,45 @@ function check() {
     echo "请指定容器名" && exit 1
     return
   fi
-  if [[ "$1" =~ "gin-web-prod" ]]; then
-    export WEB_TAG=$(cat tpl/app/web_tag)
-    environment WEB_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
+  if [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
+    export WEB_IMAGE=$(cat tpl/app/web_image)
+    environment WEB_IMAGE WEB_HOME
+    environment WEB_PORT WEB_PPROF_PORT WEB_INTERNAL_PORT WEB_INTERNAL_PPROF_PORT MACHINE_ID
     environment WEB_REDIS_URI WEB_MYSQL_URI
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
     cat tpl/app/web.yml |
+      sed "s#\${WEB_IMAGE}#${WEB_IMAGE}#g" |
+      sed "s#\${WEB_HOME}#${WEB_HOME}#g" |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
       sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
       sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
+      sed "s/\${WEB_INTERNAL_PORT}/${WEB_INTERNAL_PORT}/g" |
+      sed "s/\${WEB_INTERNAL_PPROF_PORT}/${WEB_INTERNAL_PPROF_PORT}/g" |
       sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
       sed "s#\${WEB_MYSQL_URI}#${WEB_MYSQL_URI}#g" >run/$1-tmp.yml
     cat run/$1-tmp.yml | sed 's/\\\&/\&/g' >run/$1.yml
     rm run/$1-tmp.yml
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/\\&/\&/g')
-  elif [[ "$1" =~ "gin-web-stage" ]]; then
-    export WEB_STAGE_TAG=$(cat tpl/app/web_tag)
-    environment WEB_STAGE_TAG WEB_PORT WEB_PPROF_PORT MACHINE_ID
-    environment WEB_REDIS_URI WEB_MYSQL_URI
-    export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
-    cat tpl/app/web-stage.yml |
-      sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
-      sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
-      sed "s/\${WEB_STAGE_TAG}/${WEB_STAGE_TAG}/g" |
-      sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
-      sed "s/\${WEB_PPROF_PORT}/${WEB_PPROF_PORT}/g" |
-      sed "s#\${WEB_REDIS_URI}#${WEB_REDIS_URI}#g" |
-      sed "s#\${WEB_MYSQL_URI}#${WEB_MYSQL_URI}#g" >run/$1-tmp.yml
-    cat run/$1-tmp.yml | sed 's/\\\&/\&/g' >run/$1.yml
-    rm run/$1-tmp.yml
-    export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/\\&/\&/g')
-  elif [[ "$1" =~ "gin-web-vue-prod" ]]; then
-    export UI_TAG=$(cat tpl/app/ui_tag)
-    environment UI_TAG UI_PORT
-    environment WEB_HOST WEB_PORT
+  elif [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
+    export UI_IMAGE=$(cat tpl/app/ui_image)
+    environment UI_IMAGE
+    environment UI_PORT UI_INTERNAL_PORT
+    environment WEB_HOST WEB_PORT NGINX_UPSTREAM
     cat tpl/app/ui.yml |
       sed "s/\${UI_CONTAINER_NAME}/$1/g" |
-      sed "s/\${UI_TAG}/${UI_TAG}/g" |
-      sed "s/\${UI_PORT}/${UI_PORT}/g" >run/$1.yml
+      sed "s#\${UI_IMAGE}#${UI_IMAGE}#g" |
+      sed "s/\${UI_PORT}/${UI_PORT}/g" |
+      sed "s/\${UI_INTERNAL_PORT}/${UI_INTERNAL_PORT}/g" >run/$1.yml
     cat tpl/app/nginx/nginx.conf |
       sed "s/\${WEB_HOST}/${WEB_HOST}/g" |
-      sed "s/\${WEB_PORT}/${WEB_PORT}/g" >run/nginx-conf/$1-nginx.conf
-  elif [[ "$1" =~ "gin-web-vue-stage" ]]; then
-    export UI_STAGE_TAG=$(cat tpl/app/ui_tag)
-    environment UI_STAGE_TAG UI_PORT
-    environment WEB_HOST WEB_PORT
-    cat tpl/app/ui-stage.yml |
-      sed "s/\${UI_CONTAINER_NAME}/$1/g" |
-      sed "s/\${UI_TAG}/${UI_TAG}/g" |
-      sed "s/\${UI_PORT}/${UI_PORT}/g" >run/$1.yml
-    cat tpl/app/nginx/nginx-stage.conf |
-      sed "s/\${WEB_HOST}/${WEB_HOST}/g" |
-      sed "s/\${WEB_PORT}/${WEB_PORT}/g" >run/nginx-conf/$1-nginx-stage.conf
+      sed "s/\${WEB_PORT}/${WEB_PORT}/g" |
+      sed "s/\${UI_INTERNAL_PORT}/${UI_INTERNAL_PORT}/g" |
+      sed "s/\${NGINX_UPSTREAM}/${NGINX_UPSTREAM}/g" >run/nginx-conf/$1-nginx.conf
   elif [[ "$1" =~ "redis-master-sentinel" ]]; then
     environment REDIS_PORT REDIS_PASS REDIS_MASTER_SENTINEL_PORT REDIS_MASTER_NAME REDIS_MASTER_IP LOCAL_IP
-    environment REDIS_MASTER_SENTINEL_CONTAINER_NAME
+    environment REDIS_MASTER_SENTINEL_CONTAINER_NAME REDIS_IMAGE
     cat tpl/redis/redis-sentinel.conf |
       sed "s/\${REDIS_PORT}/${REDIS_PORT}/g" |
       sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" |
@@ -148,7 +130,7 @@ function check() {
       sed "s/\${REDIS_SENTINEL_CONTAINER_NAME}/${REDIS_MASTER_SENTINEL_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-master" ]]; then
     environment REDIS_PORT REDIS_PASS
-    environment REDIS_MASTER_CONTAINER_NAME
+    environment REDIS_MASTER_CONTAINER_NAME REDIS_IMAGE
     cat tpl/redis/redis-master.conf |
       sed "s/\${REDIS_PORT}/${REDIS_PORT}/g" |
       sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" >run/redis-conf/$1.conf
@@ -157,7 +139,7 @@ function check() {
       sed "s/\${REDIS_MASTER_CONTAINER_NAME}/${REDIS_MASTER_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-slave-sentinel" ]]; then
     environment REDIS_PORT REDIS_PASS REDIS_SLAVE_SENTINEL_PORT REDIS_MASTER_NAME REDIS_MASTER_IP LOCAL_IP
-    environment REDIS_SLAVE_SENTINEL_CONTAINER_NAME
+    environment REDIS_SLAVE_SENTINEL_CONTAINER_NAME REDIS_IMAGE
     cat tpl/redis/redis-sentinel.conf |
       sed "s/\${REDIS_PORT}/${REDIS_PORT}/g" |
       sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" |
@@ -170,7 +152,7 @@ function check() {
       sed "s/\${REDIS_SENTINEL_CONTAINER_NAME}/${REDIS_SLAVE_SENTINEL_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-slave" ]]; then
     environment REDIS_PORT REDIS_PASS REDIS_SLAVE_PORT REDIS_MASTER_IP LOCAL_IP
-    environment REDIS_SLAVE_CONTAINER_NAME
+    environment REDIS_SLAVE_CONTAINER_NAME REDIS_IMAGE
     cat tpl/redis/redis-slave.conf |
       sed "s/\${REDIS_SLAVE_PORT}/${REDIS_SLAVE_PORT}/g" |
       sed "s/\${REDIS_MASTER_IP}/${REDIS_MASTER_IP}/g" |
@@ -384,28 +366,62 @@ function fast() {
   elif [ "$1" == "ui" ]; then
     runFastUi $2
   else
+    WEB_TMP_PORT=$WEB_PORT
     runFastWeb $1
+    export WEB_PORT=$WEB_TMP_PORT
     runFastUi $1
   fi
 }
 
 function runFastWeb() {
+  environment WEB_NAME
+  if [ "$WEB_HOME" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      WEB_HOME="/app/$WEB_NAME-stage"
+    else
+      WEB_HOME="/app/$WEB_NAME-prod"
+    fi
+  fi
+  if [ "$WEB_CONTAINER_NAME" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      WEB_CONTAINER_NAME="$WEB_NAME-stage"
+    else
+      WEB_CONTAINER_NAME="$WEB_NAME-prod"
+    fi
+  fi
   if [ "$WEB_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
       WEB_PORT=9090
     else
       WEB_PORT=8080
     fi
   fi
   if [ "$WEB_PPROF_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
       WEB_PPROF_PORT=9005
     else
       WEB_PPROF_PORT=8005
     fi
   fi
+  if [ "$WEB_INTERNAL_PORT" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      WEB_INTERNAL_PORT=9090
+    else
+      WEB_INTERNAL_PORT=8080
+    fi
+  fi
+  if [ "$WEB_INTERNAL_PPROF_PORT" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      WEB_INTERNAL_PPROF_PORT=9005
+    else
+      WEB_INTERNAL_PPROF_PORT=8005
+    fi
+  fi
+  export WEB_HOME=$WEB_HOME
   export WEB_PORT=$WEB_PORT
   export WEB_PPROF_PORT=$WEB_PPROF_PORT
+  export WEB_INTERNAL_PORT=$WEB_INTERNAL_PORT
+  export WEB_INTERNAL_PPROF_PORT=$WEB_INTERNAL_PPROF_PORT
   if [ $WEB_PORT -lt 1024 ]; then
     echo 'web端口>1023'
     exit
@@ -432,29 +448,58 @@ function runFastWeb() {
     export MACHINE_ID=$index
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
-    export WEB_CONTAINER_NAME="gin-web-prod$(expr $index + 1)"
+    export WEB_INTERNAL_PORT=$item1
+    export WEB_INTERNAL_PPROF_PORT=$item2
+    export WEB_CONTAINER_TMP_NAME=$WEB_CONTAINER_NAME
+    export WEB_CONTAINER_NAME="$WEB_CONTAINER_NAME$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个web容器: $WEB_CONTAINER_NAME"
     run $WEB_CONTAINER_NAME
+    export WEB_CONTAINER_NAME=$WEB_CONTAINER_TMP_NAME
   done
 }
 
 function runFastUi() {
+  environment UI_NAME
+  if [ "$UI_CONTAINER_NAME" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      UI_CONTAINER_NAME="$UI_NAME-stage"
+    else
+      UI_CONTAINER_NAME="$UI_NAME-prod"
+    fi
+  fi
+  if [ "$NGINX_UPSTREAM" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      NGINX_UPSTREAM=stage-api
+    else
+      NGINX_UPSTREAM=api
+    fi
+  fi
   if [ "$UI_PORT" == "" ]; then
-    if [ "$GIN_WEB_MODE" == "staging" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
       UI_PORT=9080
     else
       UI_PORT=8070
     fi
   fi
+  if [ "$UI_INTERNAL_PORT" == "" ]; then
+    if [ "$RUN_MODE" == "stage" ]; then
+      UI_INTERNAL_PORT=9080
+    else
+      UI_INTERNAL_PORT=8070
+    fi
+  fi
   export UI_PORT=$UI_PORT
+  export UI_INTERNAL_PORT=$UI_INTERNAL_PORT
+  export NGINX_UPSTREAM=$NGINX_UPSTREAM
   if [ $UI_PORT -lt 1024 ]; then
     echo 'ui端口>1023'
     exit
   fi
   start3=$UI_PORT
+  start4=$UI_INTERNAL_PORT
+  start5=$WEB_PORT
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
-    s1=$(port $(expr $item1))
     s3=$(port $(expr $item3))
     if [ $s3 -eq 1 ]; then
       echo "第 $(expr $index + 1) 个ui端口被占用: $(expr $item3)(可通过export UI_PORT=xxx修改)"
@@ -463,11 +508,17 @@ function runFastUi() {
   done
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
+    item4=$(expr $start4 + $index)
+    item5=$(expr $start5 + $index)
     export MACHINE_ID=$index
     export UI_PORT=$item3
-    export UI_CONTAINER_NAME="gin-web-vue-prod$(expr $index + 1)"
+    export UI_INTERNAL_PORT=$item4
+    export WEB_PORT=$item5
+    export UI_CONTAINER_TMP_NAME=$UI_CONTAINER_NAME
+    export UI_CONTAINER_NAME="$UI_CONTAINER_NAME$(expr $index + 1)"
     echo "正在初始化第 $(expr $index + 1) 个ui容器: $UI_CONTAINER_NAME"
     run $UI_CONTAINER_NAME
+    export UI_CONTAINER_NAME=$UI_CONTAINER_TMP_NAME
   done
 }
 
@@ -535,7 +586,7 @@ function help() {
   echo "
   ./control.sh环境变量:
   COMPOSE_HTTP_TIMEOUT compose连接超时时间: 默认60(秒)
-  GIN_WEB_MODE 应用模式: production/staging, 默认production
+  RUN_MODE 应用模式: prod/stage, 默认prod
   ./control.sh运行命令:
   注意: str可取值web(后端)/ui(前端)/container-name(容器名, 可自由设置)
   pull str 更新容器

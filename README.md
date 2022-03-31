@@ -26,43 +26,20 @@ Docker Compose一键部署Gin Web, 解决构建部署烦恼
 git clone git@github.com:piupuer/gin-web-docker.git
 cd gin-web-docker
 chmod +x control.sh
-# 1. 启动redis
-# 一键启动redis哨兵模式(只需执行一次即可, 哨兵数按需修改)
-# 主节点IP(如果是单机则填写ifconfig | grep inet打印的局域网IP, 例如我的是10.13.2.252)
-export REDIS_MASTER_IP=10.13.2.252
-# 从节点IP(如果是单机则填写ifconfig | grep inet打印的局域网IP, 例如我的是10.13.2.252)
-export LOCAL_IP=10.13.2.252
-# 起始端口(会自动分配各个节点对应端口)
-export REDIS_PORT=6379
-./control.sh sentinel 3
 
-# 校验redis是否配置成功
-
-
-# 2. 启动前后端 
 # 指定远程镜像版本
-echo xxx > tpl/app/web_tag
-echo xxx > tpl/app/ui_tag
+echo xxx > tpl/app/web_image
+echo xxx > tpl/app/ui_image
+# 使用默认环境变量
+source ./env
+# 如果想切换到测试环境
+# export RUN_MODE=stage
+# 设置当前machine id(只能填写0-9)
+./control.sh id 8
+# 启动redis 3哨兵模式(启动过一次后续不需要再启动)
+./control.sh sentinel 3
 # 一键启动前端后端
-# 起始端口(默认8080)
-export WEB_PORT=7070
-# redis密码
-export REDIS_PASS=123456
-# redis哨兵模式连接地址(上面配置的redis对应sentinel所在端口)
-export WEB_REDIS_SENTINEL_ADDRESSES=10.13.2.252:6182,10.13.2.252:6183,10.13.2.252:6184
-# mysql连接地址
-export WEB_MYSQL_HOST=10.13.2.252
-export WEB_MYSQL_PORT=3306
-export WEB_MYSQL_PASSWORD=root
-# 后端项目IP(如果是单机则填写ifconfig | grep inet打印的局域网IP, 例如我的是10.13.2.252)
-export WEB_HOST=10.13.2.252
-# 启动
-./control.sh fast 2
-
-
-# 第二次需要重启时需要跳过端口校验
-SKIP_CHECK_PORT=1
-./control.sh fast 2
+./control.sh fast 3
 ```
 
 ### nginx配置
@@ -114,4 +91,4 @@ chmod +x /usr/local/bin/docker-compose
 
 ## MIT License
 
-    Copyright (c) 2020 piupuer
+    Copyright (c) 2022 piupuer

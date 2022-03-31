@@ -4,7 +4,7 @@ services:
   ${REDIS_SENTINEL_CONTAINER_NAME}:
     container_name: ${REDIS_SENTINEL_CONTAINER_NAME}
     restart: always
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    image: ${REDIS_IMAGE}
     environment:
       - TZ=Asia/Shanghai
     ports:
