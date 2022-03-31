@@ -15,3 +15,8 @@ services:
         limits:
           cpus: '${MAX_CPU}'
           memory: '${MAX_MEMORY}'
+    healthcheck:
+      test: ${UI_HEALTH_CHECK}
+      interval: 10s
+      timeout: 10s
+      retries: 3

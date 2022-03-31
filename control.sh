@@ -78,7 +78,7 @@ function check() {
   environment MAX_CPU MAX_MEMORY
   if [[ -n "$WEB_NAME" ]] && [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
     export WEB_IMAGE=$(cat tpl/app/web_image)
-    environment WEB_IMAGE WEB_HOME
+    environment WEB_IMAGE WEB_HOME WEB_HEALTH_CHECK
     environment WEB_PORT WEB_PPROF_PORT WEB_INTERNAL_PORT WEB_INTERNAL_PPROF_PORT MACHINE_ID
     environment WEB_REDIS_URI WEB_MYSQL_URI
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
@@ -87,6 +87,7 @@ function check() {
       sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s#\${WEB_IMAGE}#${WEB_IMAGE}#g" |
       sed "s#\${WEB_HOME}#${WEB_HOME}#g" |
+      sed "s#\${WEB_HEALTH_CHECK}#${WEB_HEALTH_CHECK}#g" |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
       sed "s/\${WEB_CONTAINER_NAME}/$1/g" |
       sed "s/\${WEB_TAG}/${WEB_TAG}/g" |
@@ -101,7 +102,7 @@ function check() {
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/\\&/\&/g')
   elif [[ -n "$UI_NAME" ]] && [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
     export UI_IMAGE=$(cat tpl/app/ui_image)
-    environment UI_IMAGE
+    environment UI_IMAGE UI_HEALTH_CHECK
     environment UI_PORT UI_INTERNAL_PORT
     environment WEB_HOST WEB_PORT NGINX_UPSTREAM
     cat tpl/app/ui.yml |
@@ -109,6 +110,7 @@ function check() {
       sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${UI_CONTAINER_NAME}/$1/g" |
       sed "s#\${UI_IMAGE}#${UI_IMAGE}#g" |
+      sed "s#\${UI_HEALTH_CHECK}#${UI_HEALTH_CHECK}#g" |
       sed "s/\${UI_PORT}/${UI_PORT}/g" |
       sed "s/\${UI_INTERNAL_PORT}/${UI_INTERNAL_PORT}/g" >run/$1.yml
     cat tpl/app/nginx/nginx.conf |
@@ -451,6 +453,11 @@ function runFastWeb() {
       exit
     fi
   done
+  if [ "$RUN_MODE" == "stage" ]; then
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   for ((index = 0; index < $1; index++)); do
     item1=$(expr $start1 + $index)
     item2=$(expr $start2 + $index)
@@ -512,6 +519,11 @@ function runFastUi() {
       exit
     fi
   done
+  if [ "$RUN_MODE" == "stage" ]; then
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     item4=$(expr $start4 + $index)
