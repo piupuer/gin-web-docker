@@ -19,7 +19,7 @@ export WEB_PPROF_PORT=8005
 export WEB_INTERNAL_PORT=8080
 export WEB_INTERNAL_PPROF_PORT=8005
 export WEB_REDIS_URI=redis-sentinel://:123456@10.13.2.252:6182,10.13.2.252:6183,10.13.2.252:6184?master=prod
-export WEB_MYSQL_URI='root:root@tcp(10.13.2.252:4306)/gin_web_stage?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
+export WEB_MYSQL_URI='root:root@tcp(10.13.2.252:3306)/gin_web_stage?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
 
 # ui
 export UI_NAME=gin-web-vue

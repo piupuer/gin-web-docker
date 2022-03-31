@@ -457,8 +457,6 @@ function runFastWeb() {
     export MACHINE_ID=$index
     export WEB_PORT=$item1
     export WEB_PPROF_PORT=$item2
-    export WEB_INTERNAL_PORT=$item1
-    export WEB_INTERNAL_PPROF_PORT=$item2
     export WEB_CONTAINER_TMP_NAME=$WEB_CONTAINER_NAME
     export WEB_CONTAINER_NAME="$WEB_CONTAINER_NAME$(expr $index + 1)"
     echo "Initializing $(expr $index + 1) web container: $WEB_CONTAINER_NAME"
@@ -505,8 +503,7 @@ function runFastUi() {
     exit
   fi
   start3=$UI_PORT
-  start4=$UI_INTERNAL_PORT
-  start5=$WEB_PORT
+  start4=$WEB_PORT
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     s3=$(port $(expr $item3))
@@ -518,11 +515,9 @@ function runFastUi() {
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     item4=$(expr $start4 + $index)
-    item5=$(expr $start5 + $index)
     export MACHINE_ID=$index
     export UI_PORT=$item3
-    export UI_INTERNAL_PORT=$item4
-    export WEB_PORT=$item5
+    export WEB_PORT=$item4
     export UI_CONTAINER_TMP_NAME=$UI_CONTAINER_NAME
     export UI_CONTAINER_NAME="$UI_CONTAINER_NAME$(expr $index + 1)"
     echo "Initializing $(expr $index + 1) ui container: $UI_CONTAINER_NAME"
