@@ -7,7 +7,7 @@ services:
     # 重启策略: 容器退出时总是重启容器
     restart: always
     # 指定镜像
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    image: ${REDIS_IMAGE}
     ports:
       - ${REDIS_SLAVE_PORT}:${REDIS_SLAVE_PORT}
     environment:
@@ -17,6 +17,11 @@ services:
       - ${REDIS_SLAVE_CONTAINER_NAME}-data:/data
       - ./redis-conf/${REDIS_SLAVE_CONTAINER_NAME}.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '${MAX_CPU}'
+          memory: '${MAX_MEMORY}'
 
 volumes:
   ${REDIS_SLAVE_CONTAINER_NAME}-data:

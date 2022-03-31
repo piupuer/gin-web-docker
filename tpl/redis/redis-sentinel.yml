@@ -4,7 +4,7 @@ services:
   ${REDIS_SENTINEL_CONTAINER_NAME}:
     container_name: ${REDIS_SENTINEL_CONTAINER_NAME}
     restart: always
-    image: registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+    image: ${REDIS_IMAGE}
     environment:
       - TZ=Asia/Shanghai
     ports:
@@ -12,3 +12,8 @@ services:
     volumes:
       - ./redis-conf/${REDIS_SENTINEL_CONTAINER_NAME}.conf:/usr/local/etc/redis/sentinel.conf
     command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '${MAX_CPU}'
+          memory: '${MAX_MEMORY}'

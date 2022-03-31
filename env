@@ -1,13 +1,29 @@
+# skip check port occupancy
 export SKIP_CHECK_PORT=1
-export WEB_TAG=`cat tpl/app/web_tag`
-export UI_TAG=`cat tpl/app/ui_tag`
-export WEB_PORT=7070
-export WEB_PPROF_PORT=7005
-export UI_PORT=7060
+
+# cpu/memory
+export MAX_CPU=0.70
+export MAX_MEMORY=1024M
+
+# redis sentinel
 export REDIS_PORT=6179
 export REDIS_PASS=123456
 export REDIS_MASTER_IP=10.13.2.252
 export LOCAL_IP=10.13.2.252
+export REDIS_IMAGE=registry.cn-shenzhen.aliyuncs.com/piupuer/redis:6.2.4
+
+# web
+export WEB_NAME=gin-web
+export WEB_PORT=8080
+export WEB_PPROF_PORT=8005
+export WEB_INTERNAL_PORT=8080
+export WEB_INTERNAL_PPROF_PORT=8005
 export WEB_REDIS_URI=redis-sentinel://:123456@10.13.2.252:6182,10.13.2.252:6183,10.13.2.252:6184?master=prod
-export WEB_MYSQL_URI='root:root@tcp(10.13.2.252:3306)/gin_web_prod?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
+export WEB_MYSQL_URI='root:root@tcp(10.13.2.252:4306)/gin_web_stage?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
+
+# ui
+export UI_NAME=gin-web-vue
+export WEB_PORT=8080
 export WEB_HOST=10.13.2.252
+export UI_PORT=8070
+export UI_INTERNAL_PORT=8070

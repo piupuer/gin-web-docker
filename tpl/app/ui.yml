@@ -3,14 +3,15 @@ services:
   ${UI_CONTAINER_NAME}:
     container_name: ${UI_CONTAINER_NAME}
     restart: always
-    image: registry.cn-hangzhou.aliyuncs.com/zw-gssy/gssy-cms:${UI_TAG}
+    image: ${UI_IMAGE}
     environment:
       TZ: Asia/Shanghai
     ports:
-      - ${UI_PORT}:8081
+      - ${UI_PORT}:${UI_INTERNAL_PORT}
     volumes:
       - ./nginx-conf/${UI_CONTAINER_NAME}-nginx.conf:/etc/nginx/nginx.conf
-      - ${UI_CONTAINER_NAME}-logs-data:/var/log/nginx
-
-volumes:
-  ${UI_CONTAINER_NAME}-logs-data:
+    deploy:
+      resources:
+        limits:
+          cpus: '${MAX_CPU}'
+          memory: '${MAX_MEMORY}'
