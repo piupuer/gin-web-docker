@@ -76,7 +76,7 @@ function check() {
     return
   fi
   environment MAX_CPU MAX_MEMORY
-  if [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
+  if [[ -n "$WEB_NAME" ]] && [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
     export WEB_IMAGE=$(cat tpl/app/web_image)
     environment WEB_IMAGE WEB_HOME
     environment WEB_PORT WEB_PPROF_PORT WEB_INTERNAL_PORT WEB_INTERNAL_PPROF_PORT MACHINE_ID
@@ -99,7 +99,7 @@ function check() {
     cat run/$1-tmp.yml | sed 's/\\\&/\&/g' >run/$1.yml
     rm run/$1-tmp.yml
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/\\&/\&/g')
-  elif [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
+  elif [[ -n "$UI_NAME" ]] && [[ "$1" =~ "$UI_NAME-prod" || "$1" =~ "$UI_NAME-stage" ]]; then
     export UI_IMAGE=$(cat tpl/app/ui_image)
     environment UI_IMAGE
     environment UI_PORT UI_INTERNAL_PORT
