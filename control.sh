@@ -428,11 +428,17 @@ function runFastWeb() {
       WEB_INTERNAL_PPROF_PORT=8005
     fi
   fi
+  if [ "$RUN_MODE" == "stage" ]; then
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   export WEB_HOME=$WEB_HOME
   export WEB_PORT=$WEB_PORT
   export WEB_PPROF_PORT=$WEB_PPROF_PORT
   export WEB_INTERNAL_PORT=$WEB_INTERNAL_PORT
   export WEB_INTERNAL_PPROF_PORT=$WEB_INTERNAL_PPROF_PORT
+  export WEB_HEALTH_CHECK=$WEB_HEALTH_CHECK
   if [ $WEB_PORT -lt 1024 ]; then
     echo 'web port minimum is 1024'
     exit
@@ -453,11 +459,6 @@ function runFastWeb() {
       exit
     fi
   done
-  if [ "$RUN_MODE" == "stage" ]; then
-    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/stage-api/ping || exit 1;"
-  else
-    WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/api/ping || exit 1;"
-  fi
   for ((index = 0; index < $1; index++)); do
     item1=$(expr $start1 + $index)
     item2=$(expr $start2 + $index)
@@ -502,8 +503,14 @@ function runFastUi() {
       UI_INTERNAL_PORT=8070
     fi
   fi
+  if [ "$RUN_MODE" == "stage" ]; then
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/stage-api/ping || exit 1;"
+  else
+    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/api/ping || exit 1;"
+  fi
   export UI_PORT=$UI_PORT
   export UI_INTERNAL_PORT=$UI_INTERNAL_PORT
+  export UI_HEALTH_CHECK=$UI_HEALTH_CHECK
   export NGINX_UPSTREAM=$NGINX_UPSTREAM
   if [ $UI_PORT -lt 1024 ]; then
     echo 'ui port minimum is 1024'
@@ -519,11 +526,6 @@ function runFastUi() {
       exit
     fi
   done
-  if [ "$RUN_MODE" == "stage" ]; then
-    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/stage-api/ping || exit 1;"
-  else
-    UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/api/ping || exit 1;"
-  fi
   for ((index = 0; index < $1; index++)); do
     item3=$(expr $start3 + $index)
     item4=$(expr $start4 + $index)
