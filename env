@@ -1,6 +1,10 @@
 # skip check port occupancy
 export SKIP_CHECK_PORT=1
 
+# cpu/memory
+export MAX_CPU=0.70
+export MAX_MEMORY=1024M
+
 # redis sentinel
 export REDIS_PORT=6179
 export REDIS_PASS=123456

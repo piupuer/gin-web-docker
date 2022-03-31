@@ -75,6 +75,7 @@ function check() {
     echo "please set container_name" && exit 1
     return
   fi
+  environment MAX_CPU MAX_MEMORY
   if [[ "$1" =~ "$WEB_NAME-prod" || "$1" =~ "$WEB_NAME-stage" ]]; then
     export WEB_IMAGE=$(cat tpl/app/web_image)
     environment WEB_IMAGE WEB_HOME
@@ -82,6 +83,8 @@ function check() {
     environment WEB_REDIS_URI WEB_MYSQL_URI
     export WEB_MYSQL_URI=$(echo ${WEB_MYSQL_URI} | sed 's/&/\\&/g')
     cat tpl/app/web.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s#\${WEB_IMAGE}#${WEB_IMAGE}#g" |
       sed "s#\${WEB_HOME}#${WEB_HOME}#g" |
       sed "s/\${MACHINE_ID}/${MACHINE_ID}/g" |
@@ -102,6 +105,8 @@ function check() {
     environment UI_PORT UI_INTERNAL_PORT
     environment WEB_HOST WEB_PORT NGINX_UPSTREAM
     cat tpl/app/ui.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${UI_CONTAINER_NAME}/$1/g" |
       sed "s#\${UI_IMAGE}#${UI_IMAGE}#g" |
       sed "s/\${UI_PORT}/${UI_PORT}/g" |
@@ -122,6 +127,8 @@ function check() {
       sed "s/\${REDIS_MASTER_IP}/${REDIS_MASTER_IP}/g" |
       sed "s/\${LOCAL_IP}/${LOCAL_IP}/g" >run/redis-conf/$1.conf
     cat tpl/redis/redis-sentinel.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${REDIS_SENTINEL_PORT}/${REDIS_MASTER_SENTINEL_PORT}/g" |
       sed "s/\${REDIS_SENTINEL_CONTAINER_NAME}/${REDIS_MASTER_SENTINEL_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-master" ]]; then
@@ -131,6 +138,8 @@ function check() {
       sed "s/\${REDIS_PORT}/${REDIS_PORT}/g" |
       sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" >run/redis-conf/$1.conf
     cat tpl/redis/redis-master.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${REDIS_PORT}/${REDIS_PORT}/g" |
       sed "s/\${REDIS_MASTER_CONTAINER_NAME}/${REDIS_MASTER_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-slave-sentinel" ]]; then
@@ -144,6 +153,8 @@ function check() {
       sed "s/\${REDIS_MASTER_IP}/${REDIS_MASTER_IP}/g" |
       sed "s/\${LOCAL_IP}/${LOCAL_IP}/g" >run/redis-conf/$1.conf
     cat tpl/redis/redis-sentinel.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${REDIS_SENTINEL_PORT}/${REDIS_SLAVE_SENTINEL_PORT}/g" |
       sed "s/\${REDIS_SENTINEL_CONTAINER_NAME}/${REDIS_SLAVE_SENTINEL_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "redis-slave" ]]; then
@@ -156,6 +167,8 @@ function check() {
       sed "s/\${REDIS_PASS}/${REDIS_PASS}/g" |
       sed "s/\${LOCAL_IP}/${LOCAL_IP}/g" >run/redis-conf/$1.conf
     cat tpl/redis/redis-slave.yml |
+      sed "s#\${MAX_CPU}#${MAX_CPU}#g" |
+      sed "s#\${MAX_MEMORY}#${MAX_MEMORY}#g" |
       sed "s/\${REDIS_SLAVE_PORT}/${REDIS_SLAVE_PORT}/g" |
       sed "s/\${REDIS_SLAVE_CONTAINER_NAME}/${REDIS_SLAVE_CONTAINER_NAME}/g" >run/$1.yml
   elif [[ "$1" =~ "loki" ]]; then
@@ -189,7 +202,7 @@ function check() {
     systemctl daemon-reload
     systemctl restart docker
   fi
-  CMD="docker-compose -f $WORKSPACE/run/$1.yml"
+  CMD="docker-compose --compatibility -f $WORKSPACE/run/$1.yml"
 }
 
 function environment() {
@@ -207,7 +220,7 @@ function environment() {
     fi
   done
   if [ ! "$msg" == "" ]; then
-    echo "missing env $msg" && exit 1
+    echo "missing env$msg" && exit 1
     return
   fi
 }
@@ -583,6 +596,8 @@ function help() {
   env:
   COMPOSE_HTTP_TIMEOUT       -- compose timeout(default 60s)
   RUN_MODE                   -- run mode: prod/stage(default prod)
+  MAX_CPU                    -- maximum CPUs(default 0.7)
+  MAX_MEMORY                 -- maximum memory(default 1024M)
   ./control.sh usage:
   pull container_name        -- update docker image
   build container_name       -- build docker image

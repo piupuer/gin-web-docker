@@ -13,6 +13,11 @@ services:
       - ${REDIS_MASTER_CONTAINER_NAME}-data:/data
       - ./redis-conf/${REDIS_MASTER_CONTAINER_NAME}.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '${MAX_CPU}'
+          memory: '${MAX_MEMORY}'
 
 volumes:
   ${REDIS_MASTER_CONTAINER_NAME}-data:

@@ -14,3 +14,8 @@ services:
     ports:
       - ${WEB_PORT}:${WEB_INTERNAL_PORT}
       - ${WEB_PPROF_PORT}:${WEB_INTERNAL_PPROF_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: '${MAX_CPU}'
+          memory: '${MAX_MEMORY}'
