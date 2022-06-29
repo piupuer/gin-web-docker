@@ -7,15 +7,11 @@ services:
     working_dir: ${WEB_HOME}
     environment:
       TZ: Asia/Shanghai
+      PROD_MODE: '${PROD_MODE}'
       CFG_SYSTEM_MACHINE_ID: '${MACHINE_ID}'
       CFG_SYSTEM_USE_REDIS: 'true'
       CFG_REDIS_URI: '${WEB_REDIS_URI}'
       CFG_MYSQL_URI: '${WEB_MYSQL_URI}'
-      CFG_REDIS_HOST: 172.19.201.234
-      CFG_REDIS_PORT: 9379
-      CFG_REDIS_PASSWORD: 12345qruafj
-      CFG_MYSQL_HOST: 172.19.201.234
-      CFG_MYSQL_PASSWORD: 123456
     ports:
       - ${WEB_PORT}:${WEB_INTERNAL_PORT}
       - ${WEB_PPROF_PORT}:${WEB_INTERNAL_PPROF_PORT}

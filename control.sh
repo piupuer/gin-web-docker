@@ -386,49 +386,43 @@ function fast() {
 
 function runFastWeb() {
   environment WEB_NAME
-  if [ "$WEB_HOME" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
-      WEB_HOME="/app/$WEB_NAME-stage"
-    else
-      WEB_HOME="/app/$WEB_NAME-prod"
-    fi
-  fi
+  WEB_HOME="/app/$WEB_NAME"
   if [ "$WEB_CONTAINER_NAME" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       WEB_CONTAINER_NAME="$WEB_NAME-stage"
     else
       WEB_CONTAINER_NAME="$WEB_NAME-prod"
     fi
   fi
   if [ "$WEB_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       WEB_PORT=9090
     else
       WEB_PORT=8080
     fi
   fi
   if [ "$WEB_PPROF_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       WEB_PPROF_PORT=9005
     else
       WEB_PPROF_PORT=8005
     fi
   fi
   if [ "$WEB_INTERNAL_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       WEB_INTERNAL_PORT=9090
     else
       WEB_INTERNAL_PORT=8080
     fi
   fi
   if [ "$WEB_INTERNAL_PPROF_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       WEB_INTERNAL_PPROF_PORT=9005
     else
       WEB_INTERNAL_PPROF_PORT=8005
     fi
   fi
-  if [ "$RUN_MODE" == "stage" ]; then
+  if [ "$PROD_MODE" == "stage" ]; then
     WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/stage-api/ping || exit 1;"
   else
     WEB_HEALTH_CHECK="curl -fs http://127.0.0.1:$WEB_INTERNAL_PORT/api/ping || exit 1;"
@@ -476,34 +470,34 @@ function runFastWeb() {
 function runFastUi() {
   environment UI_NAME
   if [ "$UI_CONTAINER_NAME" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       UI_CONTAINER_NAME="$UI_NAME-stage"
     else
       UI_CONTAINER_NAME="$UI_NAME-prod"
     fi
   fi
   if [ "$NGINX_UPSTREAM" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       NGINX_UPSTREAM=stage-api
     else
       NGINX_UPSTREAM=api
     fi
   fi
   if [ "$UI_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       UI_PORT=9080
     else
       UI_PORT=8070
     fi
   fi
   if [ "$UI_INTERNAL_PORT" == "" ]; then
-    if [ "$RUN_MODE" == "stage" ]; then
+    if [ "$PROD_MODE" == "stage" ]; then
       UI_INTERNAL_PORT=9080
     else
       UI_INTERNAL_PORT=8070
     fi
   fi
-  if [ "$RUN_MODE" == "stage" ]; then
+  if [ "$PROD_MODE" == "stage" ]; then
     UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/stage-api/ping || exit 1;"
   else
     UI_HEALTH_CHECK="curl -fs http://127.0.0.1:$UI_INTERNAL_PORT/api/ping || exit 1;"
@@ -604,7 +598,7 @@ function help() {
   echo "
   env:
   COMPOSE_HTTP_TIMEOUT       -- compose timeout(default 60s)
-  RUN_MODE                   -- run mode: prod/stage(default prod)
+  PROD_MODE                  -- run mode: prod/stage(default prod)
   MAX_CPU                    -- maximum CPUs(default 0.7)
   MAX_MEMORY                 -- maximum memory(default 1024M)
   ./control.sh usage:
